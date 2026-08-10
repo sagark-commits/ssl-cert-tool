@@ -1,0 +1,40 @@
+﻿# Example deploy configuration — copy to deploy-config.yaml and customize
+
+domain: example.com
+
+keystore:
+  password: "changeit"
+  alias: ameyo-server
+
+settings:
+  parallel_deployments: false
+  verify_after_deploy: true
+
+servers:
+  app_server:
+    host: 192.168.1.10
+    user: dacx
+    port: 22
+    ssh_key: ~/.ssh/id_rsa
+    services:
+      - appserver
+      - crm
+
+services:
+  appserver:
+    type: jks
+    remote_path: /dacx/ssl2025/example.com.jks
+    restart: "ameyoctl service appserver faststop && ameyoctl service appserver start"
+
+  crm:
+    type: apache
+    ssl_dir: /dacx/ssl2025/
+    cert_file: crm.crt
+    key_file: example.com.key
+    chain_file: chain.crt
+    restart: "systemctl reload httpd"
+
+  asterisk:
+    type: asterisk
+    cert_dir: /etc/asterisk/keys/
+    restart: "asterisk -rx 'module reload res_pjsip.so'"

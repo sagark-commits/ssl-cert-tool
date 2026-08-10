@@ -1,0 +1,143 @@
+SSL Certificate Tool - Generate on Linux Server (Script Only)
+=============================================================
+
+Use this when you have NO Windows/Mac GUI package and need to
+generate Ameyo SSL files directly on a Linux server.
+
+
+1. COPY PACKAGE TO SERVER
+-------------------------
+From your PC, copy one of:
+  - SSLCertTool-Linux-Source.zip   (python3 on server)
+  - SSLCertTool-Linux.zip          (standalone, built on Linux)
+
+Example:
+  scp SSLCertTool-Linux-Source.zip dacx@server:/dacx/
+  ssh dacx@server
+  cd /dacx
+  unzip SSLCertTool-Linux-Source.zip -d SSLCertTool
+  cd SSLCertTool
+
+
+2. ONE-TIME SETUP
+-----------------
+# RHEL/CentOS
+sudo yum install -y python3 python3-pip
+# Ubuntu
+sudo apt install -y python3 python3-pip
+
+# Install Python libs
+python3 -m pip install --user -r requirements.txt
+
+# Offline servers: use offline/install-offline.sh if wheels are included
+
+
+3. PUT CUSTOMER FILES ON SERVER
+-------------------------------
+Example layout:
+  /dacx/SSL2026/
+    customer.eml                 # or .crt / folder
+    domain.key                   # private key (REQUIRED)
+
+Also know your Tomcat values:
+  keystorePass  (example: YOUR_KEYSTORE_PASSWORD)
+  keyAlias      (usually: ameyo-server)
+
+
+4. GENERATE (EASIEST)
+---------------------
+chmod +x generate-on-linux.sh
+
+Interactive:
+  ./generate-on-linux.sh
+
+Or one command:
+  ./generate-on-linux.sh \
+    --input /dacx/SSL2026/customer.eml \
+    --key /dacx/SSL2026/domain.key \
+    --password 'YOUR_KEYSTORE_PASSWORD' \
+    --alias ameyo-server \
+    -o /dacx/SSL2026/out
+
+If you have standalone binary:
+  ./ssl-auto generate \
+    --input /dacx/SSL2026/customer.eml \
+    --key /dacx/SSL2026/domain.key \
+    --password 'YOUR_KEYSTORE_PASSWORD' \
+    --alias ameyo-server \
+    -o /dacx/SSL2026/out
+
+Wizard:
+  ./ssl-auto --wizard
+  # or: python3 ssl-auto.py --wizard
+
+
+5. OUTPUT FILES
+---------------
+Look under -o directory (often a domain subfolder):
+
+  main_<domain>.crt              -> CRM leaf (rename to crm.crt if needed)
+  <domain>.key                   -> private key
+  chain.crt / crm-ca.crt         -> Apache chain
+  <domain>.ca-bundle             -> legacy ca-bundle (int + root)
+  <domain>.pem                   -> full chain (certs only)
+  asterisk.pem                   -> KEY first + certs (Asterisk WSS)
+  asterisk_<domain>.crt          -> Asterisk cert chain
+  <domain>.jks                   -> Tomcat JKS (needs Java keytool)
+  keystore.p12                   -> PKCS12
+
+
+6. VERIFY BEFORE DEPLOY
+-----------------------
+# Key matches cert
+openssl x509 -noout -modulus -in out/*/main_*.crt | openssl md5
+openssl rsa  -noout -modulus -in out/*/*.key      | openssl md5
+
+# Asterisk PEM must start with KEY
+grep -E 'BEGIN PRIVATE KEY|BEGIN RSA PRIVATE KEY|BEGIN CERTIFICATE' out/*/asterisk.pem | head
+
+# JKS (if Java installed)
+keytool -list -keystore out/*/*.jks -storepass 'YOUR_KEYSTORE_PASSWORD' -alias ameyo-server
+
+
+7. DEPLOY (MANUAL COPY EXAMPLES)
+--------------------------------
+# Backup first
+cp /dacx/ssl2025/app.jks /dacx/ssl2025/app.jks.bak.date +%Y%m%d
+
+# Tomcat JKS - path must match connector.https.keystoreFile
+cp out/<domain>/<domain>.jks /dacx/ssl2025/app.jks
+
+# CRM
+cp out/<domain>/main_<domain>.crt /dacx/ssl2025/crm.crt
+cp out/<domain>/<domain>.key      /dacx/ssl2025/<domain>.key
+cp out/<domain>/chain.crt         /dacx/ssl2025/chain.crt
+# or ca-bundle style:
+cp out/<domain>/<domain>.ca-bundle /dacx/ssl2025/<domain>.ca-bundle
+
+# Asterisk
+KEYS=/dacx/var/ameyo/dacxdata/asterisks/13/etc/asterisk/keys
+cp out/<domain>/asterisk.pem \/asterisk.pem
+cp out/<domain>/asterisk_<domain>.crt \/asterisk.crt
+cp out/<domain>/<domain>.key \/asterisk.key
+chown dacx:dacx \/*
+chmod 600 \/asterisk.key \/asterisk.pem
+
+# Restart services as per your site (AppServer / httpd / asterisk)
+
+
+8. COMMON ISSUES
+----------------
+- Key/Cert FAIL: wrong .key for this cert
+- Tomcat fails: JKS password != connector.https.keystorePass
+- WebRTC 8089 down: asterisk.pem missing KEY at top
+- No JKS file: install Java (keytool) or use keystore.p12 + importkeystore
+- Mac ZIP missing on Windows PC: normal - build on Mac with ./build-mac.sh
+
+
+9. QUICK CHEAT SHEET
+--------------------
+cd /dacx/SSLCertTool
+python3 -m pip install --user -r requirements.txt
+./generate-on-linux.sh -i /dacx/SSL2026/cert.eml -k /dacx/SSL2026/domain.key -p 'PASS' -a ameyo-server -o /dacx/SSL2026/out
+ls -la /dacx/SSL2026/out/*/

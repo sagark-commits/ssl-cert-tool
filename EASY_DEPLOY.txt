@@ -1,0 +1,46 @@
+================================================================================
+  SSL DEPLOY - ASNB - EASY INSTRUCTIONS (no scripting knowledge needed)
+================================================================================
+
+FIRST TIME ONLY
+---------------
+1. Double-click: setup.bat
+2. Wait until it finishes.
+
+TODAY'S DEPLOYMENT (pick ONE way)
+---------------------------------
+
+WAY 1 - EASIEST (menu)
+   Double-click: START-HERE.bat
+   - Press 1 to test
+   - Press 4 for full deploy (it asks YES before changing servers)
+
+WAY 2 - THREE BUTTONS
+   Step 1: Double-click 1-TEST-CERTS.bat     (must show PASS)
+   Step 2: Double-click 2-DRY-RUN.bat        (review output)
+   Step 3: Double-click 3-DEPLOY-NOW.bat     (type YES to go live)
+
+WAY 3 - COPY THESE 3 COMMANDS (if you prefer cmd)
+   Open cmd in ssl-cert-tool folder:
+
+   cd C:\Users\sagar.k\Downloads\ssl-cert-tool
+
+   python ssl-auto.py inspect --input "C:\Users\sagar.k\Downloads\ASNB CERT" --key "C:\Users\sagar.k\Downloads\ASNB CERT\asnbcc.tmone.com.my.key"
+
+   python ssl-auto.py run --config asnb --input "C:\Users\sagar.k\Downloads\ASNB CERT" --key "C:\Users\sagar.k\Downloads\ASNB CERT\asnbcc.tmone.com.my.key" --dry-run
+
+   python ssl-auto.py run --config asnb --input "C:\Users\sagar.k\Downloads\ASNB CERT" --key "C:\Users\sagar.k\Downloads\ASNB CERT\asnbcc.tmone.com.my.key"
+
+WHAT GETS UPDATED
+-----------------
+  asnb-app-db  -> AppServer, Reports, CRM certs
+  asnb-cs      -> Asterisk certs
+
+IF SOMETHING FAILS
+------------------
+  - Run 1-TEST-CERTS.bat again
+  - Check you can SSH: ssh dacx@asnb-app-db
+  - Open run.bat option 4 for step-by-step wizard
+  - Or double-click ssl-gui.bat for graphical tool
+
+================================================================================

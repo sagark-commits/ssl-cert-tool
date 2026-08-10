@@ -1,0 +1,70 @@
+SSL Certificate Tool - Mac (Ready to Run - No Mac Build PC Needed)
+==================================================================
+
+IMPORTANT
+---------
+A true Mac .app binary can ONLY be compiled ON a Mac.
+This package is READY TO RUN on Mac without that:
+  - Unzip on the Mac
+  - Double-click the starter
+  - First run installs Python packages into a local .venv
+  - Needs Python 3 on the Mac (one-time, free)
+
+
+INSTALL PYTHON ON THE MAC (once)
+--------------------------------
+Recommended (includes GUI/Tk):
+  https://www.python.org/downloads/macos/
+  Download Python 3.11 or 3.12 -> Install -> check "Install for all users"
+
+Or with Homebrew:
+  brew install python@3.11 python-tk@3.11
+
+
+HOW TO RUN
+----------
+1. Copy SSLCertTool-Mac-Source.zip to the Mac
+2. Double-click to unzip (or: unzip SSLCertTool-Mac-Source.zip)
+3. Right-click "Start SSL Certificate Tool.command" -> Open -> Open
+   (first time only; macOS Gatekeeper)
+4. Wait for first-run dependency install
+5. GUI opens - generate certs as usual
+
+
+CLI / SCRIPT GENERATE
+---------------------
+Double-click: generate-on-mac.command
+
+Or in Terminal:
+  cd ~/Desktop/SSLCertTool-Mac-Source
+  chmod +x *.command generate-on-linux.sh
+  ./generate-on-mac.command
+
+  python3 ssl-auto.py generate \
+    --input ~/certs/customer.eml \
+    --key ~/certs/domain.key \
+    --password 'YOUR_KEYSTORE_PASSWORD' \
+    --alias ameyo-server \
+    -o ~/certs/out
+
+
+IF MAC BLOCKS THE FILE
+----------------------
+System Settings -> Privacy & Security -> Allow Anyway
+Or Terminal:
+  xattr -dr com.apple.quarantine SSLCertTool-Mac-Source
+
+
+NOTES
+-----
+- Keep the whole folder together (.venv is created inside it)
+- Internet needed on first run (pip install) unless offline/wheels present
+- JKS needs Java keytool; P12/PEM work without Java
+- Same tool as Windows; outputs are identical
+
+
+WANT A TRUE STANDALONE .APP LATER?
+----------------------------------
+On any Mac (friend/CI/cloud Mac):
+  ./build-mac.sh
+  -> dist/SSLCertTool-Mac.zip  (no Python for end users)

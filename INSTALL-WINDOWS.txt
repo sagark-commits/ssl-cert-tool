@@ -1,0 +1,35 @@
+SSL Certificate Tool - Windows Install (All-in-One)
+====================================================
+
+NO PYTHON INSTALL NEEDED.
+
+1. Unzip SSLCertTool-Windows.zip anywhere
+   (e.g. Desktop\SSLCertTool-Windows)
+
+2. Double-click:
+     "Start SSL Certificate Tool.bat"
+   or run:
+     SSLCertTool.exe
+
+3. Optional CLI:
+     "Start CLI Wizard.bat"
+   or:
+     ssl-auto.exe --wizard
+
+4. Edit configs in the configs\ folder next to the .exe
+   Output files appear in output\
+
+Optional: Java keytool
+----------------------
+- P12 / PEM / CRT generation works without Java
+- .jks creation needs Java JDK/JRE with keytool on PATH
+  (same as before for Tomcat JKS)
+
+Firewall / antivirus
+--------------------
+First run may be scanned by Windows Defender - allow the app.
+This package is unsigned; for internal use that is normal.
+
+Support
+-------
+See README.txt in this folder.

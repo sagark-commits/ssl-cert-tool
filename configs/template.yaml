@@ -1,0 +1,145 @@
+﻿# SSL Deployment Configuration Template
+# =====================================
+# Copy this file and customize for your environment:
+#   cp configs/template.yaml configs/mycompany.yaml
+#
+# Then use with: python ssl-auto.py run --config configs/mycompany.yaml ...
+
+# Domain name (optional - auto-detected from certificate CN if not specified)
+# Use this to override or confirm the expected domain
+domain: ""  # e.g., example.com, *.example.com, mail.example.com
+
+# Keystore settings (for JKS/P12 generation)
+keystore:
+  password: "changeit"  # IMPORTANT: Change this for production!
+  alias: "server-cert"  # Key alias in the keystore
+
+# SSH defaults (can be overridden per server)
+ssh:
+  user: "root"           # Default SSH user
+  port: 22               # Default SSH port
+  key: "~/.ssh/id_rsa"   # Default SSH key path (~ expands on all platforms)
+  # password: ""         # Or use SSH_PASSWORD environment variable
+
+# =============================================================================
+# SERVER DEFINITIONS
+# =============================================================================
+# Define your servers and which services run on each.
+# Server names are arbitrary identifiers used in deploy output.
+#
+# Each server needs:
+#   - host: hostname or IP address
+#   - user: (optional) SSH user, defaults to ssh.user above
+#   - port: (optional) SSH port, defaults to 22
+#   - key_file: (optional) SSH key path, defaults to ssh.key above
+#   - services: list of service names to deploy to this server
+
+servers:
+  # Example: Application server with Tomcat
+  # app_server:
+  #   host: "192.168.1.10"
+  #   user: "deploy"
+  #   services:
+  #     - tomcat
+
+  # Example: Web server with Apache/Nginx
+  # web_server:
+  #   host: "192.168.1.20"
+  #   user: "root"
+  #   services:
+  #     - apache
+  #     - nginx
+
+  # Example: VoIP server with Asterisk
+  # voip_server:
+  #   host: "192.168.1.30"
+  #   services:
+  #     - asterisk
+
+# =============================================================================
+# SERVICE DEFINITIONS
+# =============================================================================
+# Define how certificates are deployed for each service type.
+# Service names must match those referenced in servers above.
+#
+# Supported types: jks, apache, nginx, asterisk, custom
+
+services:
+  # ---------------------------------------------------------------------------
+  # JKS-based service (Tomcat, Jetty, Spring Boot, etc.)
+  # ---------------------------------------------------------------------------
+  # tomcat:
+  #   type: jks
+  #   remote_path: /opt/tomcat/conf/keystore.jks
+  #   restart: "systemctl restart tomcat"
+  #
+  # For Ameyo/custom Java apps:
+  # appserver:
+  #   type: jks
+  #   remote_path: /app/ssl/server.jks
+  #   restart: "ameyoctl service appserver faststop && sleep 5 && ameyoctl service appserver start"
+
+  # ---------------------------------------------------------------------------
+  # Apache/httpd service
+  # ---------------------------------------------------------------------------
+  # apache:
+  #   type: apache
+  #   ssl_dir: /etc/httpd/ssl/           # All cert files in one directory
+  #   cert_file: server.crt              # Certificate filename
+  #   key_file: server.key               # Private key filename
+  #   chain_file: ca-bundle.crt          # CA chain filename
+  #   restart: "systemctl reload httpd"
+  #
+  # Alternative: separate cert/key directories
+  # apache_split:
+  #   type: apache
+  #   cert_path: /etc/pki/tls/certs/
+  #   key_path: /etc/pki/tls/private/
+  #   cert_file: server.crt
+  #   key_file: server.key
+  #   chain_file: ca-bundle.crt
+  #   restart: "apachectl graceful"
+
+  # ---------------------------------------------------------------------------
+  # Nginx service
+  # ---------------------------------------------------------------------------
+  # nginx:
+  #   type: nginx
+  #   cert_path: /etc/nginx/ssl/
+  #   cert_file: fullchain.pem           # Optional: defaults to {domain}.crt
+  #   key_file: privkey.pem              # Optional: defaults to {domain}.key
+  #   restart: "systemctl reload nginx"
+
+  # ---------------------------------------------------------------------------
+  # Asterisk VoIP service
+  # ---------------------------------------------------------------------------
+  # asterisk:
+  #   type: asterisk
+  #   cert_dir: /etc/asterisk/keys/
+  #   restart: "asterisk -rx 'module reload res_pjsip.so'"
+
+  # ---------------------------------------------------------------------------
+  # Custom service (explicit file mappings)
+  # ---------------------------------------------------------------------------
+  # custom_app:
+  #   type: custom
+  #   file_mappings:
+  #     certificate: /app/certs/server.crt
+  #     private_key: /app/certs/server.key
+  #     chain: /app/certs/ca-bundle.crt
+  #     jks: /app/certs/keystore.jks
+  #   restart: "systemctl restart myapp"
+
+# =============================================================================
+# CERTIFICATE MAPPINGS (optional, advanced)
+# =============================================================================
+# Override how generated files map to remote destinations.
+# Most deployments don't need this - the service type handles it automatically.
+#
+# cert_mappings:
+#   - source: "{domain}.jks"
+#     destination: /path/to/keystore.jks
+#     services: [tomcat]
+#   - source: "main_{domain}.crt"
+#     destination: /path/to/server.crt
+#     services: [apache]

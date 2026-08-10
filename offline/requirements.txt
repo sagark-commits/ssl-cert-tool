@@ -1,0 +1,25 @@
+# ssl-auto — cross-platform dependencies (Python 3.8+)
+# Pinned versions for offline installation and reproducibility
+
+# Certificate generation (core)
+cryptography==42.0.5
+
+# SSH deployment (all platforms)
+paramiko==3.4.0
+
+# Unified YAML config
+PyYAML==6.0.1
+
+# Colored output on Windows
+colorama==0.4.6
+
+# Paramiko dependencies (required for SSH)
+bcrypt==4.1.2
+pynacl==1.5.0
+cffi==1.16.0
+
+# Optional: .docx parsing
+python-docx==1.1.0
+
+# Optional: .7z archive extraction
+py7zr==0.20.8

@@ -1,0 +1,51 @@
+SSL Certificate Tool - Linux Install
+====================================
+
+TWO OPTIONS
+-----------
+
+A) SOURCE PACKAGE (works on any Linux with python3)
+   File: SSLCertTool-Linux-Source.zip
+   Built from Windows with: pack-linux-source.bat
+
+B) STANDALONE BINARY (no python on target)
+   File: SSLCertTool-Linux.zip
+   Must be built ON Linux with: ./build-linux.sh
+
+
+OPTION A - SOURCE (recommended for servers)
+-------------------------------------------
+1. Copy SSLCertTool-Linux-Source.zip to server
+2. unzip SSLCertTool-Linux-Source.zip -d /dacx/SSLCertTool
+3. cd /dacx/SSLCertTool
+4. chmod +x generate-on-linux.sh
+5. Install deps once:
+     # With internet:
+     python3 -m pip install --user -r requirements.txt
+     # OR offline (if offline/wheels present):
+     cd offline && chmod +x install-offline.sh && ./install-offline.sh
+6. Generate:
+     ./generate-on-linux.sh
+
+
+OPTION B - STANDALONE BINARY
+----------------------------
+1. On a Linux build host: ./build-linux.sh
+2. Copy dist/SSLCertTool-Linux.zip to target
+3. unzip && cd SSLCertTool-Linux
+4. ./ssl-auto --wizard
+   OR ./generate-on-linux.sh
+
+
+WHY NO MAC ZIP FROM WINDOWS
+---------------------------
+Mac apps must be built on a Mac:
+  ./build-mac.sh   -> dist/SSLCertTool-Mac.zip
+
+You cannot create a Mac ZIP on Windows.
+
+
+JAVA NOTE
+---------
+P12/PEM/CRT/Asterisk: no Java needed
+JKS (.jks): needs keytool (Java) on PATH

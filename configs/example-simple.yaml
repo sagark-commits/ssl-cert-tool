@@ -1,0 +1,23 @@
+﻿# Example: Simple Single-Server Tomcat Deployment
+# ================================================
+# A minimal configuration for deploying SSL certs to one Tomcat server.
+# Copy and customize for your environment.
+
+domain: ""  # Auto-detected from certificate
+
+keystore:
+  password: "changeit"  # Change this!
+  alias: "tomcat"
+
+servers:
+  web_server:
+    host: "192.168.1.10"  # Your server IP or hostname
+    user: "root"
+    services:
+      - tomcat
+
+services:
+  tomcat:
+    type: jks
+    remote_path: /opt/tomcat/conf/ssl/keystore.jks
+    restart: "systemctl restart tomcat"
