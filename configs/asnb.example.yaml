@@ -1,0 +1,71 @@
+# ASNB-style example configuration (NO real secrets)
+# Copy to asnb.yaml and fill in local values:
+#   cp configs/asnb.example.yaml configs/asnb.yaml
+#
+# asnb.yaml is gitignored — never commit real passwords.
+
+domain: asnbcc.tmone.com.my
+
+keystore:
+  password: "CHANGE_ME"
+  alias: ameyo-server
+
+servers:
+  asnb_app_db:
+    host: asnb-app-db
+    user: dacx
+    port: 22
+    ssh_key: ~/.ssh/id_rsa
+    services: [appserver, reports, crm]
+
+  asnb_cs:
+    host: asnb-cs
+    user: root
+    port: 22
+    ssh_key: ~/.ssh/id_rsa
+    services: [asterisk]
+
+services:
+  appserver:
+    type: jks
+    remote_path: /dacx/ssl2025/asnbcc.jks
+    restart: "ameyoctl service appserver faststop && sleep 5 && ameyoctl service appserver start"
+  reports:
+    type: jks
+    remote_path: /dacx/ssl2025/asnbcc.jks
+    restart: "ameyoctl service reports faststop && sleep 5 && ameyoctl service reports start"
+  crm:
+    type: apache
+    ssl_dir: /dacx/ssl2025/
+    cert_file: crm.crt
+    key_file: asnbcc.tmone.com.my.key
+    chain_file: chain.crt
+    restart: "systemctl reload httpd"
+  asterisk:
+    type: asterisk
+    cert_dir: /dacx/var/ameyo/dacxdata/asterisks/13/etc/asterisk/keys/
+    restart: "asterisk -rx 'module reload res_pjsip.so'"
+
+cert_mappings:
+  - source: "{domain}.jks"
+    destination: /dacx/ssl2025/asnbcc.jks
+    services: [appserver, reports]
+  - source: "main_{domain}.crt"
+    destination: /dacx/ssl2025/crm.crt
+    services: [crm]
+  - source: "{domain}.key"
+    destination: /dacx/ssl2025/asnbcc.tmone.com.my.key
+    services: [crm]
+  - source: "chain.crt"
+    destination: /dacx/ssl2025/chain.crt
+    services: [crm]
+    alt_sources: ["crm-ca.crt"]
+  - source: "asterisk_{domain}.crt"
+    destination: asterisk.crt
+    services: [asterisk]
+  - source: "{domain}.key"
+    destination: asterisk.key
+    services: [asterisk]
+  - source: "asterisk.pem"
+    destination: asterisk.pem
+    services: [asterisk]

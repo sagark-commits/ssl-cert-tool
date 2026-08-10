@@ -1,0 +1,53 @@
+﻿# Example: Multi-Server Deployment
+# =================================
+# Configuration for deploying SSL certs to multiple servers with different services.
+# Common setup: Web server (Apache/Nginx) + App server (Tomcat) + VoIP (Asterisk)
+
+domain: ""  # Auto-detected from certificate
+
+keystore:
+  password: "changeit"  # Change this for production!
+  alias: "server-cert"
+
+# Default SSH settings (can be overridden per server)
+ssh:
+  user: "deploy"
+  key: "~/.ssh/id_rsa"
+
+servers:
+  # Web/reverse proxy server
+  web_server:
+    host: "web.example.com"
+    user: "root"
+    services:
+      - nginx
+
+  # Application server
+  app_server:
+    host: "app.example.com"
+    user: "deploy"
+    services:
+      - tomcat
+
+  # VoIP server
+  voip_server:
+    host: "voip.example.com"
+    user: "root"
+    services:
+      - asterisk
+
+services:
+  nginx:
+    type: nginx
+    cert_path: /etc/nginx/ssl/
+    restart: "systemctl reload nginx"
+
+  tomcat:
+    type: jks
+    remote_path: /opt/tomcat/conf/keystore.jks
+    restart: "systemctl restart tomcat"
+
+  asterisk:
+    type: asterisk
+    cert_dir: /etc/asterisk/keys/
+    restart: "asterisk -rx 'module reload res_pjsip.so'"

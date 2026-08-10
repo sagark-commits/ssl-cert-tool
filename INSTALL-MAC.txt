@@ -1,0 +1,37 @@
+SSL Certificate Tool - macOS Install (All-in-One)
+=================================================
+
+NO PYTHON INSTALL NEEDED.
+
+1. Unzip SSLCertTool-Mac.zip anywhere
+   (e.g. ~/Desktop/SSLCertTool-Mac)
+
+2. First time (macOS Gatekeeper):
+   Right-click "Start SSL Certificate Tool.command"
+   -> Open -> Open
+   Or right-click SSLCertTool.app -> Open
+
+3. Later launches: double-click the .command or .app
+
+4. Optional CLI:
+   Double-click "Start CLI Wizard.command"
+   Or in Terminal:
+     cd ~/Desktop/SSLCertTool-Mac
+     ./ssl-auto --wizard
+
+5. Edit configs in the configs/ folder next to the app
+   Output files appear in output/
+
+Optional: Java keytool
+----------------------
+- P12 / PEM / CRT generation works without Java
+- .jks creation needs Java with keytool on PATH
+
+If macOS blocks the app
+-----------------------
+System Settings -> Privacy & Security -> Allow anyway
+Or: xattr -dr com.apple.quarantine SSLCertTool-Mac
+
+Support
+-------
+See README.txt in this folder.
