@@ -1,4 +1,4 @@
-﻿import hashlib, glob, shutil, subprocess, sys
+import hashlib, glob, shutil, subprocess, sys
 from pathlib import Path
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend

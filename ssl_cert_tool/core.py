@@ -938,6 +938,12 @@ def validate_asterisk_pem_format(pem_data: bytes, private_key, leaf: x509.Certif
 def create_jks(p12_path: Path, jks_path: Path, keytool: Path, store_pass: str) -> None:
     if not keytool.exists():
         raise FileNotFoundError(f"keytool not found at {keytool}")
+    # Java keytool rejects store passwords shorter than 6 characters.
+    if len(store_pass) < 6:
+        raise ValueError(
+            f"keystore password must be at least 6 characters "
+            f"(got {len(store_pass)}; Java keytool requirement for JKS)"
+        )
     if jks_path.exists():
         jks_path.unlink()
     cmd = [
@@ -957,9 +963,12 @@ def create_jks(p12_path: Path, jks_path: Path, keytool: Path, store_pass: str) -
         store_pass,
         "-noprompt",
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, capture_output=True)
     if result.returncode != 0:
-        raise RuntimeError(result.stderr or result.stdout)
+        err = (result.stderr or b"").decode("utf-8", errors="replace").strip()
+        out = (result.stdout or b"").decode("utf-8", errors="replace").strip()
+        detail = err or out or f"keytool exited with code {result.returncode}"
+        raise RuntimeError(detail)
 
 
 def build_outputs(
@@ -1030,7 +1039,7 @@ def build_outputs(
     try:
         create_jks(p12_path, jks_path, keytool, store_pass)
         result.files.append(jks_path)
-    except (FileNotFoundError, RuntimeError) as exc:
+    except (FileNotFoundError, RuntimeError, ValueError) as exc:
         result.warnings.append(f"JKS not created: {exc}")
     p = output_dir / f"asterisk_{domain}.crt"
     write_pem_certs(chain, p)

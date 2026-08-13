@@ -1,4 +1,4 @@
-﻿"""Cross-platform SSL deployment orchestrator (paramiko-based)."""
+"""Cross-platform SSL deployment orchestrator (paramiko-based)."""
 from __future__ import annotations
 
 import logging
