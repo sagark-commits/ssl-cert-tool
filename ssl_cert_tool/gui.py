@@ -35,7 +35,7 @@ TOOLTIPS = {
     "cert_files": "Add certificate files (.crt, .pem, .p7b, .eml, .txt, etc.) or folders containing certificates",
     "key_file": "Private key file (.key or .pem) - required for JKS/P12 generation",
     "domain": "Domain name for output files. Auto-detected from leaf cert CN if empty",
-    "store_pass": "Password for JKS and P12 keystore files",
+    "store_pass": "Password for JKS and P12 keystore files (Java keytool requires at least 6 characters for JKS)",
     "alias": "Alias name for the key entry in the keystore",
     "output_dir": "Directory where output files will be created",
     "keytool": "Path to Java keytool.exe. Required for JKS creation",
@@ -756,11 +756,21 @@ class SSLCertToolApp:
             for w in result.warnings:
                 self.root.after(0, lambda msg=w: self._log(f"WARNING: {msg}"))
             self.root.after(0, lambda: self._log(f"Created {len(result.files)} file(s) in {output_dir}"))
-            self.root.after(0, lambda: self.status_text.set(
-                f"Done. {len(result.files)} files created in {output_dir}"))
-            self.root.after(0, lambda: messagebox.showinfo(
-                "Success", f"Generated {len(result.files)} files in:\n{output_dir}",
-                parent=self.root))
+            jks_warnings = [w for w in result.warnings if "JKS" in w]
+            if jks_warnings:
+                warn_text = "\n".join(jks_warnings)
+                self.root.after(0, lambda: self.status_text.set(
+                    f"Done with warnings. {len(result.files)} files in {output_dir}"))
+                self.root.after(0, lambda wt=warn_text: messagebox.showwarning(
+                    "Generated with warnings",
+                    f"Generated {len(result.files)} files in:\n{output_dir}\n\n{wt}",
+                    parent=self.root))
+            else:
+                self.root.after(0, lambda: self.status_text.set(
+                    f"Done. {len(result.files)} files created in {output_dir}"))
+                self.root.after(0, lambda: messagebox.showinfo(
+                    "Success", f"Generated {len(result.files)} files in:\n{output_dir}",
+                    parent=self.root))
         except Exception as exc:
             self.root.after(0, lambda: messagebox.showerror("Error", str(exc), parent=self.root))
             self.root.after(0, lambda: self._log(f"ERROR: {exc}"))

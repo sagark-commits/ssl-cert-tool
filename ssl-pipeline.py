@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Unified SSL pipeline CLI: inspect, generate, and deploy."""
 from __future__ import annotations
 
