@@ -156,10 +156,12 @@ def _build(tmp_path, pki, leaf, **kw):
 def test_generated_private_files_are_0600_and_dir_is_0700(tmp_path, pki, leaf):
     result = _build(tmp_path, pki, leaf)
     out = tmp_path / "out"
-    for name in (f"{DOMAIN}.key", "keystore.p12", "asterisk.pem", f"asterisk_{DOMAIN}.pem"):
+    for name in (f"{DOMAIN}.key", "keystore.p12", f"{DOMAIN}.jks", "asterisk.pem", f"asterisk_{DOMAIN}.pem"):
         assert stat.S_IMODE((out / name).stat().st_mode) == 0o600, name
     assert stat.S_IMODE(out.stat().st_mode) == 0o700
-    assert any("JKS not created" in w for w in result.warnings)
+    # keytool is deliberately missing, so the built-in writer made the keystore and said so
+    assert any("built-in JKS writer" in w for w in result.warnings)
+    assert not any("JKS not created" in w for w in result.warnings)
 
 
 def test_ed25519_keys_can_be_generated(tmp_path, pki):
