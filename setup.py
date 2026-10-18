@@ -39,9 +39,9 @@ def check_keytool() -> bool:
     if kt:
         print(f"[OK] keytool: {kt}")
         return True
-    print("[WARN] keytool not found — JKS generation requires Java JDK")
-    print("       Set JAVA_HOME or install JDK and add keytool to PATH")
-    return False
+    print("[INFO] keytool not found - the built-in JKS writer will be used (a JDK is optional)")
+    print("       To use Java's own keytool instead, set JAVA_HOME or add keytool to PATH")
+    return True
 
 
 def check_ssh() -> bool:

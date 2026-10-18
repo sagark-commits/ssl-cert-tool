@@ -1,0 +1,60 @@
+# Example: Ameyo multi-role renewal using the reusable service catalogue
+# =============================================================================
+# Uses catalogues/ameyo.yaml via `ameyo_profile:` + `role:` - see that file for
+# what each role actually does. A typical layout:
+#   - appserver + tomcat_si share one keystore on "app" -> uploaded, cacerts
+#     imported and verified ONCE for that host (catalogue hook dedup)
+#   - ameyoart + vla share one keystore on "db", independently deduped there
+#   - crm + acp share one CA-bundle fileset, each written under both the
+#     domain name and the legacy name Apache still references
+#   - restarts run in `priority` order and only fire if ameyoctl reports the
+#     service as RUNNING
+#
+# Replace the domain, hostnames and paths with your own. Check them first with
+#   ls -d /dacx/var/ameyo/dacxdata/asterisks/*/etc/asterisk/keys
+#
+# Usage:
+#   python ssl-auto.py validate  --config configs/example-ameyo.yaml
+#   python ssl-auto.py preflight --config configs/example-ameyo.yaml
+#   python ssl-auto.py plan      --config configs/example-ameyo.yaml
+#   python ssl-auto.py deploy    --config configs/example-ameyo.yaml --certs ./new-certs --dry-run
+#   python ssl-auto.py rollback  --config configs/example-ameyo.yaml --dry-run
+# =============================================================================
+
+domain: example.com
+
+keystore:
+  password: "${env:KEYSTORE_PASSWORD}"   # export KEYSTORE_PASSWORD first; never write it in this file
+  alias: "ameyo-server"                  # connector.https.keyAlias
+
+ameyo_profile:
+  ssl_dir: /dacx/exampleSSL27
+  jks_name: server-keystore.jks
+  ca_bundle_legacy: legacy.ca-bundle
+  asterisk_keys: /dacx/var/ameyo/dacxdata/asterisks/13/etc/asterisk/keys
+  # java_dir defaults to /usr/lib/jvm/java-1.8.0-amazon-corretto
+
+servers:
+  app:
+    host: app.example.internal
+    user: root
+    services: [appserver, tomcat_si, crm, acp]
+
+  db:
+    host: db.example.internal
+    user: root
+    services: [ameyoart, vla, acp]
+
+  call:
+    host: call.example.internal
+    user: root
+    services: [asterisk]
+
+services:
+  appserver: {role: appserver}
+  tomcat_si: {role: tomcat_si}
+  ameyoart: {role: ameyoart}
+  vla: {role: vla}
+  crm: {role: crm}
+  acp: {role: acp}
+  asterisk: {role: asterisk}

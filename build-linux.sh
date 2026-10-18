@@ -24,6 +24,14 @@ OUT="dist/SSLCertTool-Linux"
 rm -rf "$OUT"
 mkdir -p "$OUT/configs" "$OUT/output"
 
+# Only the template and examples are shipped: customer configs (hostnames,
+# passwords) must never be bundled into the binary or the package.
+STAGE="build/package-configs"
+rm -rf "$STAGE"; mkdir -p "$STAGE"
+cp configs/template.yaml "$STAGE/"
+cp configs/example-*.yaml "$STAGE/" 2>/dev/null || true
+cp configs/*.example.yaml "$STAGE/" 2>/dev/null || true
+
 echo
 echo "[1/1] Building CLI: ssl-auto ..."
 python3 -m PyInstaller --noconfirm --clean --console --onefile \
@@ -34,7 +42,8 @@ python3 -m PyInstaller --noconfirm --clean --console --onefile \
     --paths . \
     --add-data "ssl_cert_tool:ssl_cert_tool" \
     --add-data "ssl_deploy:ssl_deploy" \
-    --add-data "configs:configs" \
+    --add-data "$STAGE:configs" \
+    --add-data "catalogues:catalogues" \
     --hidden-import=paramiko \
     --hidden-import=cryptography \
     --hidden-import=yaml \
@@ -49,7 +58,7 @@ python3 -m PyInstaller --noconfirm --clean --console --onefile \
     ssl-auto.py
 
 chmod +x "$OUT/ssl-auto"
-cp -R configs/* "$OUT/configs/" 2>/dev/null || true
+cp -R "$STAGE"/* "$OUT/configs/" 2>/dev/null || true
 cp README-PORTABLE.txt "$OUT/README.txt" 2>/dev/null || true
 cp INSTALL-LINUX.txt "$OUT/INSTALL.txt" 2>/dev/null || true
 cp LINUX_GENERATE_GUIDE.txt "$OUT/LINUX_GENERATE_GUIDE.txt" 2>/dev/null || true

@@ -42,4 +42,4 @@ NOTES
 -----
 - Keep whole folder together
 - P12/PEM/CRT: no Java needed
-- JKS: needs Java keytool on PATH
+- JKS: uses Java's keytool if it is on PATH; otherwise the built-in JKS writer is used (no Java needed)

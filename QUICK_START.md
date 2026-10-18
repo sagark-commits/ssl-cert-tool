@@ -1,4 +1,4 @@
-﻿# SSL Certificate Tool — Quick Start
+# SSL Certificate Tool — Quick Start
 
 Five steps to generate and deploy SSL certificates for any domain.
 
@@ -105,6 +105,9 @@ python ssl-auto.py validate --config mycompany
 
 # Show deployment plan
 python ssl-auto.py plan --config mycompany --certs output/example.com/
+
+# Undo the last deploy
+python ssl-auto.py rollback --config mycompany
 ```
 
 ---

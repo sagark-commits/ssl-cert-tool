@@ -1,0 +1,179 @@
+# ============================================================================
+# Ameyo/CRM service catalogue - generic role definitions shared by every
+# Ameyo customer config. This is the YAML equivalent of the old
+# legacy/services/ameyo.roles bash catalogue.
+# ============================================================================
+# A customer config opts in with a top-level `ameyo_profile:` block:
+#
+#   ameyo_profile:
+#     ssl_dir: /dacx/exampleSSL27
+#     jks_name: emerge-server-keystore.jks
+#     ca_bundle_legacy: ameyemerge.in.ca-bundle
+#     asterisk_keys: /dacx/var/ameyo/dacxdata/asterisks/13/etc/asterisk/keys
+#     # java_dir defaults to /usr/lib/jvm/java-1.8.0-amazon-corretto
+#
+# then references a role per service instead of writing one out by hand:
+#
+#   services:
+#     appserver: {role: appserver}
+#
+# Any field can still be overridden explicitly alongside `role:` — explicit
+# keys win over the catalogue's.
+#
+# Available ${...} placeholders in this file (filled in from ameyo_profile +
+# the config's top-level `domain:`/`keystore:` blocks):
+#   domain  ssl_dir  jks_name  jks_path  jks_pass  jks_alias
+#   ca_bundle_legacy  java_dir  keytool  cacerts  asterisk_keys
+# ============================================================================
+
+hooks:
+  # Import the new keystore into the JVM truststore. Backs up cacerts first,
+  # then deletes the existing alias - a plain -importkeystore fails with
+  # "alias already exists" on the second run.
+  cacerts_import: |
+    set -e
+    if [ ! -f '${cacerts}' ]; then echo '!! cacerts not found: ${cacerts}' >&2; exit 1; fi
+    cp -p '${cacerts}' "${cacerts}.bak.$(date +%Y%m%d_%H%M%S)"
+    '${keytool}' -delete -alias '${jks_alias}' -keystore '${cacerts}' -storepass changeit 2>/dev/null || true
+    '${keytool}' -importkeystore \
+      -srckeystore '${jks_path}' \
+      -destkeystore '${cacerts}' \
+      -srcstoretype JKS -deststoretype JKS \
+      -srcstorepass '${jks_pass}' -deststorepass changeit -noprompt
+    echo '>> cacerts import OK'
+
+  # Confirm the deployed keystore opens with the configured password/alias.
+  jks_verify: |
+    '${keytool}' -list -keystore '${jks_path}' -storepass '${jks_pass}' -alias '${jks_alias}' \
+      && echo '>> keystore opens with configured pass/alias'
+
+  # Cert and key must be the same pair.
+  keypair_check: |
+    c=$(openssl x509 -noout -modulus -in '${ssl_dir}/asterisk.crt' 2>/dev/null | openssl md5)
+    k=$(openssl rsa  -noout -modulus -in '${ssl_dir}/asterisk.key' 2>/dev/null | openssl md5)
+    if [ "$c" = "$k" ]; then echo '>> cert/key pair matches'; else echo "!! cert/key MISMATCH ($c vs $k)" >&2; exit 1; fi
+
+  # Ameyo requires the private key FIRST in asterisk.pem. Fail loudly if not.
+  asterisk_pem_check: |
+    if head -1 '${asterisk_keys}/asterisk.pem' | grep -q 'PRIVATE KEY'; then
+      echo '>> asterisk.pem is key-first OK'
+    else
+      echo '!! asterisk.pem is NOT key-first - WSS on 8089 will fail' >&2
+      exit 1
+    fi
+
+  # Apache config test before any reload.
+  httpd_configtest: |
+    if command -v apachectl >/dev/null 2>&1; then apachectl configtest && echo '>> apache configtest OK'
+    else echo '>> apachectl not on PATH, skipping configtest'; fi
+
+roles:
+  # ---- Tomcat / Java services (all share the one keystore) ----------------
+
+  # Core Ameyo application server.
+  appserver:
+    type: jks
+    remote_path: "${jks_path}"
+    hooks: [cacerts_import, jks_verify]
+    restart: {ameyoctl_guard: appserver, wait: 12, faststop: true}
+    priority: 10
+
+  # Second Tomcat instance. Shares appserver's keystore and is served by the
+  # appserver process, so it needs no restart of its own by default.
+  # Override with e.g. `restart: {ameyoctl_guard: <service-name>}` in the
+  # site config if your build exposes it as a separate ameyoctl service.
+  tomcat_si:
+    type: jks
+    remote_path: "${jks_path}"
+    hooks: [cacerts_import, jks_verify]
+    priority: 11
+
+  # AmeyoART / reporting.
+  ameyoart:
+    type: jks
+    remote_path: "${jks_path}"
+    hooks: [cacerts_import, jks_verify]
+    restart: {ameyoctl_guard: ameyoart, wait: 6}
+    priority: 20
+
+  # VoiceLogger Analyzer - same keystore/path as ameyoart.
+  vla:
+    type: jks
+    remote_path: "${jks_path}"
+    hooks: [cacerts_import, jks_verify]
+    restart: {ameyoctl_guard: voicelogger_analyzer, wait: 6}
+    priority: 21
+
+  ameyoreports:
+    type: jks
+    remote_path: "${jks_path}"
+    hooks: [cacerts_import, jks_verify]
+    restart: {ameyoctl_guard: ameyoreports, wait: 6}
+    priority: 22
+
+  scripter:
+    type: jks
+    remote_path: "${jks_path}"
+    hooks: [cacerts_import, jks_verify]
+    restart: {ameyoctl_guard: scripter, wait: 6}
+    priority: 23
+
+  # ---- Apache front ends ----------------------------------------------------
+  # SSLCertificateFile gets the LEAF only, because these vhosts also set
+  # SSLCertificateChainFile. The chain is written under both the domain name
+  # and the legacy name so the vhost keeps resolving whether or not it's
+  # been repointed to the new name.
+
+  # CRM (typically vhost :8786).
+  crm:
+    type: custom
+    file_mappings:
+      certificate: "${ssl_dir}/asterisk.crt"
+      private_key: "${ssl_dir}/asterisk.key"
+      chain:
+        - "${ssl_dir}/${domain}.ca-bundle"
+        - "${ssl_dir}/${ca_bundle_legacy}"
+    hooks: [keypair_check]
+    restart: {ameyoctl_guard: crm, wait: 4}
+    priority: 30
+
+  # ACP (typically vhost :8080). Often present on more than one host.
+  acp:
+    type: custom
+    file_mappings:
+      certificate: "${ssl_dir}/asterisk.crt"
+      private_key: "${ssl_dir}/asterisk.key"
+      chain:
+        - "${ssl_dir}/${domain}.ca-bundle"
+        - "${ssl_dir}/${ca_bundle_legacy}"
+    hooks: [keypair_check]
+    restart: {ameyoctl_guard: acp, wait: 4}
+    priority: 31
+
+  # ---- Nginx -----------------------------------------------------------------
+  nginx:
+    type: nginx
+    cert_path: "${ssl_dir}"
+    restart: {ameyoctl_guard: nginxserver, wait: 4}
+    priority: 32
+
+  # ---- Telephony ---------------------------------------------------------
+  # Asterisk 13 / WSS on 8089.
+  asterisk:
+    type: asterisk
+    cert_dir: "${asterisk_keys}"
+    hooks: [asterisk_pem_check]
+    restart: "asterisk -rx 'module reload res_tls.so' ; asterisk -rx 'module reload res_pjsip.so' ; asterisk -rx 'http show status'"
+    priority: 40
+
+  # ---- Utility -------------------------------------------------------------
+  # Files only, no service. Use on a host that just needs the certs on disk
+  # (e.g. a jump box, or a host where you restart services by hand).
+  certs_only:
+    type: custom
+    file_mappings:
+      certificate: "${ssl_dir}/main_${domain}.crt"
+      private_key: "${ssl_dir}/${domain}.key"
+      fullchain: "${ssl_dir}/${domain}.pem"
+      chain: "${ssl_dir}/chain.crt"
+    priority: 90

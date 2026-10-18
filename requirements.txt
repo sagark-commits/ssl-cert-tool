@@ -1,25 +1,23 @@
-# ssl-auto — cross-platform dependencies (Python 3.8+)
-# Pinned versions for offline installation and reproducibility
+# ssl-auto - Python dependencies (Python 3.9+)
+# Lower bounds are security floors, not pins:
+#   cryptography >= 44.0.1  bundled OpenSSL fixes (CVE-2024-12797) and the not_valid_*_utc API
+#   paramiko     >= 3.4.0   SSH "Terrapin" prefix-truncation fix (CVE-2023-48795)
+# Transitive packages (bcrypt, pynacl, cffi) are resolved by pip.
 
-# Certificate generation (core)
-cryptography==42.0.5
+# Certificate parsing/generation (core)
+cryptography>=44.0.1
 
-# SSH deployment (all platforms)
-paramiko==3.4.0
+# SSH deployment
+paramiko>=3.4.0
 
 # Unified YAML config
-PyYAML==6.0.1
+PyYAML>=6.0.1
 
 # Colored output on Windows
-colorama==0.4.6
+colorama>=0.4.6
 
-# Paramiko dependencies (required for SSH)
-bcrypt==4.1.2
-pynacl==1.5.0
-cffi==1.16.0
+# Optional: .docx input parsing
+python-docx>=1.1.0
 
-# Optional: .docx parsing
-python-docx==1.1.0
-
-# Optional: .7z archive extraction
-py7zr==0.20.8
+# Optional: .7z archive input
+py7zr>=0.22.0

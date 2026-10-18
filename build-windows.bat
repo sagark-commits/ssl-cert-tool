@@ -9,12 +9,14 @@ echo.
 
 cd /d "%~dp0"
 
+for /f %%v in ('python -c "from ssl_cert_tool import __version__ as v; print(v)"') do set VERSION=%%v
+
 python --version >nul 2>&1
 if errorlevel 1 (
     echo ERROR: Python is required ON THE BUILD MACHINE only.
     echo Install Python 3.10+ from https://python.org
     echo End users of the package do NOT need Python.
-    pause
+    if not defined NO_PAUSE pause
     exit /b 1
 )
 
@@ -23,11 +25,21 @@ python -m pip install --upgrade pip >nul
 python -m pip install -r requirements.txt "pyinstaller>=6.3" "setuptools>=71" >nul
 if errorlevel 1 (
     echo ERROR: pip install failed
-    pause
+    if not defined NO_PAUSE pause
     exit /b 1
 )
 
-set OUT=dist\SSLCertTool-Windows
+REM Only the template and examples are shipped: customer configs (which can hold
+REM hostnames and passwords) must never be bundled into the exe or the package.
+set STAGE=build\package-configs
+if exist "%STAGE%" rmdir /s /q "%STAGE%"
+mkdir "%STAGE%"
+copy /Y configs\template.yaml "%STAGE%\" >nul
+copy /Y configs\example-*.yaml "%STAGE%\" >nul 2>nul
+copy /Y configs\*.example.yaml "%STAGE%\" >nul 2>nul
+
+REM Versioned output folder: building never deletes an earlier release.
+set OUT=dist\SSLCertTool-Windows-v%VERSION%
 if exist "%OUT%" rmdir /s /q "%OUT%"
 mkdir "%OUT%"
 mkdir "%OUT%\configs"
@@ -43,7 +55,8 @@ python -m PyInstaller --noconfirm --clean --windowed --onefile ^
     --paths . ^
     --add-data "ssl_cert_tool;ssl_cert_tool" ^
     --add-data "ssl_deploy;ssl_deploy" ^
-    --add-data "configs;configs" ^
+    --add-data "%STAGE%;configs" ^
+    --add-data "catalogues;catalogues" ^
     --hidden-import=paramiko ^
     --hidden-import=cryptography ^
     --hidden-import=yaml ^
@@ -59,7 +72,7 @@ python -m PyInstaller --noconfirm --clean --windowed --onefile ^
 
 if errorlevel 1 (
     echo ERROR: GUI build failed
-    pause
+    if not defined NO_PAUSE pause
     exit /b 1
 )
 
@@ -73,7 +86,8 @@ python -m PyInstaller --noconfirm --clean --console --onefile ^
     --paths . ^
     --add-data "ssl_cert_tool;ssl_cert_tool" ^
     --add-data "ssl_deploy;ssl_deploy" ^
-    --add-data "configs;configs" ^
+    --add-data "%STAGE%;configs" ^
+    --add-data "catalogues;catalogues" ^
     --hidden-import=paramiko ^
     --hidden-import=cryptography ^
     --hidden-import=yaml ^
@@ -89,13 +103,13 @@ python -m PyInstaller --noconfirm --clean --console --onefile ^
 
 if errorlevel 1 (
     echo ERROR: CLI build failed
-    pause
+    if not defined NO_PAUSE pause
     exit /b 1
 )
 
 echo.
 echo Copying configs and docs into package...
-xcopy /E /I /Y configs "%OUT%\configs\" >nul
+xcopy /E /I /Y "%STAGE%" "%OUT%\configs\" >nul
 copy /Y README-PORTABLE.txt "%OUT%\README.txt" >nul
 copy /Y INSTALL-WINDOWS.txt "%OUT%\INSTALL.txt" >nul 2>nul
 
@@ -113,22 +127,35 @@ echo pause
 ) > "%OUT%\Start CLI Wizard.bat"
 
 echo.
+echo Smoke-testing the built executables...
+"%OUT%\ssl-auto.exe" --version
+if errorlevel 1 (
+    echo ERROR: the built ssl-auto.exe failed its smoke test
+    if not defined NO_PAUSE pause
+    exit /b 1
+)
+
+echo Writing SHA-256 checksums...
+REM LF line endings, so `sha256sum -c SHA256SUMS.txt` works on Linux/macOS/Git Bash too.
+powershell -NoProfile -Command "$l = Get-FileHash -Algorithm SHA256 '%OUT%\*.exe' | ForEach-Object { '{0}  {1}' -f $_.Hash.ToLower(), (Split-Path $_.Path -Leaf) }; [IO.File]::WriteAllText((Join-Path (Get-Location) '%OUT%\SHA256SUMS.txt'), (($l -join [char]10) + [char]10))"
+
+echo.
 echo Creating ZIP...
-powershell -NoProfile -Command "Compress-Archive -Path '%OUT%\*' -DestinationPath 'dist\SSLCertTool-Windows.zip' -Force"
+powershell -NoProfile -Command "Compress-Archive -Path '%OUT%\*' -DestinationPath 'dist\SSLCertTool-Windows-v%VERSION%.zip' -Force"
 
 echo.
 echo ============================================
 echo  BUILD COMPLETE
 echo ============================================
 echo.
-echo  Folder: dist\SSLCertTool-Windows\
-echo  Zip:    dist\SSLCertTool-Windows.zip
+echo  Folder: %OUT%\
+echo  Zip:    dist\SSLCertTool-Windows-v%VERSION%.zip
 echo.
 echo  Give users the ZIP. They unzip and double-click:
 echo    "Start SSL Certificate Tool.bat"
 echo  No Python install needed on their PC.
 echo.
-echo  NOTE: JKS generation still needs Java keytool on PATH
-echo        if you use .jks files ^(P12 works without Java^).
+echo  NOTE: no Java needed. .jks files are made with Java's keytool when it is
+echo        installed, otherwise with the built-in JKS writer.
 echo.
-pause
+if not defined NO_PAUSE pause

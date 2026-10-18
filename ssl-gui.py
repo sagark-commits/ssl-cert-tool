@@ -94,6 +94,7 @@ class SSLCertToolGUI:
         self.deploy_config_path = tk.StringVar()
         self.deploy_cert_dir = tk.StringVar()
         self.dry_run = tk.BooleanVar(value=False)
+        self.trust_new_hosts = tk.BooleanVar(value=False)
         
         self._build_ui()
     
@@ -171,7 +172,7 @@ class SSLCertToolGUI:
         self._add_field(frame, "Output Directory:", self.output_dir, self._browse_output,
                        tooltip="Directory where output files will be created")
         self._add_field(frame, "Keytool Path:", self.keytool_path, self._browse_keytool,
-                       tooltip="Path to Java keytool executable (for JKS creation)")
+                       tooltip="Optional. Path to Java keytool; if it is not found, a built-in JKS writer is used")
         
         btn_frame = ttk.Frame(frame)
         btn_frame.pack(fill=tk.X, pady=(10, 0))
@@ -236,6 +237,11 @@ class SSLCertToolGUI:
         opts_frame = ttk.Frame(config_frame)
         opts_frame.pack(fill=tk.X, pady=(5, 0))
         ttk.Checkbutton(opts_frame, text="Dry Run (no changes)", variable=self.dry_run).pack(side=tk.LEFT)
+        ttk.Checkbutton(
+            opts_frame,
+            text="Trust new SSH host keys (first connection only)",
+            variable=self.trust_new_hosts,
+        ).pack(side=tk.LEFT, padx=(12, 0))
         ToolTip(opts_frame, "Preview what would be deployed without making changes")
         
         btn_frame = ttk.Frame(frame)
@@ -647,6 +653,9 @@ class SSLCertToolGUI:
             cert_path=cert_dir,
             dry_run=self.dry_run.get(),
             verbose=True,
+            # Unknown servers are refused unless the operator explicitly opts in;
+            # a CHANGED host key is always refused.
+            host_key_policy="accept-new" if self.trust_new_hosts.get() else None,
         )
         
         if not deployer.load_config():
@@ -670,6 +679,11 @@ class SSLCertToolGUI:
         success = sum(1 for r in results if r.status.value == "success")
         failed = len(results) - success
         self._log(f"\n  Summary: {success} succeeded, {failed} failed")
+        if any("Untrusted host key" in r.message for r in results):
+            self._log(
+                "\n  Hint: verify the server's fingerprint, then tick "
+                "'Trust new SSH host keys' and deploy again."
+            )
     
     def run(self):
         self.root.mainloop()

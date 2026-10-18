@@ -1,4 +1,4 @@
-﻿# SSL Certificate Tool — User Guide
+# SSL Certificate Tool — User Guide
 
 Universal SSL certificate generation and deployment tool for any domain and server setup.
 
@@ -126,6 +126,8 @@ python ssl-auto.py run \
 | `configs` | List available configurations |
 | `validate` | Validate a configuration file |
 | `plan` | Show deployment plan without changes |
+| `rollback` | Restore files from the most recent (or a specific) pre-deploy backup |
+| `preflight` | Check each server's live `ameyoctl status` before deploying |
 | `check-old` | Inspect existing JKS/cert (local or remote) |
 | `compare` | Compare old and new certificates |
 
@@ -152,6 +154,17 @@ python ssl-auto.py configs
 
 # Show deployment plan
 python ssl-auto.py plan --config myconfig --certs output/example.com/
+
+# Undo the last deploy (restores the most recent pre-deploy backup)
+python ssl-auto.py rollback --config myconfig
+
+# Roll back one server to a specific snapshot, preview first
+python ssl-auto.py rollback --config myconfig --server web_server --dry-run
+python ssl-auto.py rollback --config myconfig --server web_server --timestamp 20260916_143000
+
+# Check live ameyoctl status before deploying (also runs automatically
+# before `deploy`/`run`, unless --skip-preflight is passed)
+python ssl-auto.py preflight --config myconfig
 
 # Generate with custom alias and password
 python ssl-auto.py generate --input certs/ --key domain.key --alias "ameyo-server" --password "mypass"
@@ -203,7 +216,7 @@ When renewing an existing certificate, you can import settings from the old keys
 
 ```bash
 # Step 1: Check the old certificate
-python ssl-auto.py check-old --jks /dacx/ssl2025/old.jks --password "23w1LLch4"
+python ssl-auto.py check-old --jks /dacx/ssl2025/old.jks --password "<keystore-password>"
 
 # Output:
 # === Current Certificate Details ===
@@ -220,14 +233,14 @@ python ssl-auto.py run \
   --input new_customer.eml \
   --key domain.key \
   --match-old /dacx/ssl2025/old.jks \
-  --old-password "23w1LLch4" \
+  --old-password "<keystore-password>" \
   --config asnb
 
 # Step 3: Compare old and new
 python ssl-auto.py compare \
   --old /dacx/ssl2025/old.jks \
   --new output/example.com/example.com.jks \
-  --password "23w1LLch4"
+  --password "<keystore-password>"
 
 # Output:
 # === Certificate Comparison ===
@@ -267,10 +280,47 @@ python ssl-auto.py check-old \
 | `asterisk` | Asterisk VoIP | `cert_dir` |
 | `custom` | Other services | `file_mappings` |
 
+Any service type also accepts:
+
+| Field | Purpose |
+|-------|---------|
+| `hooks` | Shell commands run once per host after uploads succeed, before restarts (e.g. importing a cert into another store). Identical hooks across services on the same server run once. |
+| `priority` | Restart order on a server with multiple services (ascending, default `50`). Identical restart commands on the same server run once. |
+
+Two services on the same server that write to the **same remote path** (e.g. two Tomcat services sharing one keystore) are uploaded, backed up, and hook-verified only once — see `configs/example-ameyo.yaml` for a full worked example.
+
+### Ameyo service catalogue (`ameyo_profile:` / `role:`)
+
+For Ameyo/CRM customers, writing every service by hand means re-pasting the same cacerts-import/keypair-check hook scripts for every service and every customer. Instead, add a top-level `ameyo_profile:` block with the customer-specific values, then reference a role per service:
+
+```yaml
+domain: example.com
+keystore: {password: "changeit", alias: "ameyo-server"}
+
+ameyo_profile:
+  ssl_dir: /dacx/exampleSSL
+  jks_name: emerge-server-keystore.jks
+  ca_bundle_legacy: legacy-name.ca-bundle
+  asterisk_keys: /etc/asterisk/keys
+  # java_dir defaults to /usr/lib/jvm/java-1.8.0-amazon-corretto
+
+servers:
+  app: {host: app-server, services: [appserver, crm]}
+
+services:
+  appserver: {role: appserver}
+  crm: {role: crm}
+```
+
+Each `role:` expands into a full service definition (type, `file_mappings`/`remote_path`, `hooks`, `priority`, `restart`) from `catalogues/ameyo.yaml`, substituting `${ssl_dir}`, `${jks_path}`, `${jks_pass}`, `${jks_alias}`, `${ca_bundle_legacy}`, `${keytool}`, `${cacerts}`, `${asterisk_keys}`, `${domain}`. Available roles: `appserver`, `tomcat_si`, `ameyoart`, `vla`, `ameyoreports`, `scripter`, `crm`, `acp`, `nginx`, `asterisk`, `certs_only`. Any field can be overridden explicitly alongside `role:` — explicit keys win over the catalogue's (e.g. `{role: vla, priority: 25}`).
+
+Configs without `ameyo_profile:` (like `asnb.yaml`) are completely unaffected — the catalogue only expands services that opt in with `role:`.
+
 ### SSH authentication
 
 1. **SSH key** (recommended): Set `ssh_key: ~/.ssh/id_rsa` per server
-2. **Password**: Set `SSH_PASSWORD` environment variable, or `ssh_password` in config
+2. **Password**: Set the `SSH_PASSWORD` environment variable, or use `password: ${env:VAR}` in config (avoid plaintext passwords in the file)
+3. **Host keys**: unknown servers are refused until you verify the fingerprint and re-run with `--accept-new-hostkeys` (or pin `host_key_sha256` in the config). See README → "Host keys".
 3. **ssh-agent**: Supported on macOS/Linux
 
 ### Example configurations
@@ -281,6 +331,7 @@ See the `configs/` directory for examples:
 - `example-simple.yaml` — Single server Tomcat
 - `example-multiserver.yaml` — Multiple servers (web + app + VoIP)
 - `asnb.yaml` — Real production example
+- `example-ameyo.yaml` — Multi-role Ameyo example (shared keystore, cacerts import hook, ordered restarts)
 
 ---
 
@@ -305,7 +356,7 @@ The tool auto-converts paths between formats.
 | Key does not match certificate | Use the correct `.key` file for that domain |
 | JKS password FAIL | Check `keystore.password` in your config |
 | SSH failed | Test: `ssh user@hostname` manually |
-| `keytool` not found | Install Java JDK (needed for `.jks`) |
+| `keytool` not found | Not an error: the built-in JKS writer is used. Install a JDK only if you want Java's own `keytool` |
 | Config not found | Use full path or name: `--config asnb` |
 
 ---
@@ -390,7 +441,7 @@ A: No — only on your local machine.
 A: Yes — use `--server server_name`.
 
 **Q: Can I undo a deploy?**
-A: Backups are saved at `/tmp/ssl-deploy-backups/` on each server.
+A: Yes — every overwritten file is backed up first. Run `python ssl-auto.py rollback --config myconfig` to restore the most recent snapshot (or `--timestamp` for a specific one). Raw backups live at `/tmp/ssl-deploy-backups/<server>/<timestamp>/<original path>` on each server if you need to inspect them by hand.
 
 **Q: What's the difference between `ssl-auto.py` and `ssl-pipeline.py`?**
 A: Both generate certs. `ssl-auto.py` is the main tool with built-in deploy and more commands.
