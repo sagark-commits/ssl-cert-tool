@@ -1,4 +1,4 @@
-import hashlib, glob, shutil, subprocess, sys
+import hashlib, glob, os, shutil, subprocess, sys
 from pathlib import Path
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -7,8 +7,17 @@ from cryptography.hazmat.primitives.asymmetric import ec, rsa
 from cryptography.x509.oid import NameOID
 DOMAIN = "asnbcc.tmone.com.my"
 EXPECTED_EXPIRY = "2027-01-16"
-KEYSTORE_PASSWORDS = ["YOUR_KEYSTORE_PASSWORD", "changeit"]
+# Never hard-code the keystore password: export KEYSTORE_PASSWORD before running this script.
+KEYSTORE_PASSWORDS = [p for p in (os.environ.get("KEYSTORE_PASSWORD"), "changeit") if p]
 KEYSTORE_ALIAS = "ameyo-server"
+def _load_p12(data):
+    """Open a PKCS#12 with whichever of KEYSTORE_PASSWORDS fits."""
+    for pw in KEYSTORE_PASSWORDS:
+        try:
+            return serialization.pkcs12.load_key_and_certificates(data, pw.encode(), backend=default_backend())
+        except Exception:
+            continue
+    raise ValueError("no keystore password worked")
 CERT_DIR = Path(r"C:\Users\sagar.k\Downloads\ssl-cert-tool\output\asnbcc.tmone.com.my")
 ALT_DIR = Path(r"C:\Users\sagar.k\Downloads\output\asnbcc.tmone.com.my")
 def md5_file(path):
@@ -115,10 +124,10 @@ pem_certs = load_certs_from_file(pem_path); pem_ok, pem_msg = validate_chain_ord
 if pem_certs and md5_cert_der(pem_certs[0].public_bytes(serialization.Encoding.DER)) != leaf_fp: pem_ok=False; pem_msg+="; PEM leaf differs"
 results["PEM Full Chain"] = (pem_ok, pem_msg)
 jks_ok, jks_msg = check_keystore_jks(jks_path, KEYSTORE_PASSWORDS) if jks_path.exists() else (False,"missing")
-results["JKS Keystore (password YOUR_KEYSTORE_PASSWORD)"] = (jks_ok, jks_msg)
+results["JKS Keystore"] = (jks_ok, jks_msg)
 p12_ok, p12_msg = check_keystore_p12(p12_path, KEYSTORE_PASSWORDS) if p12_path.exists() else (False,"missing")
 if p12_ok:
-    with open(p12_path,"rb") as f: _,c,_=serialization.pkcs12.load_key_and_certificates(f.read(), b"YOUR_KEYSTORE_PASSWORD", backend=default_backend())
+    with open(p12_path,"rb") as f: _,c,_=_load_p12(f.read())
     if c and keys_match(priv_key,c): p12_msg += "; p12 key matches domain.key"
     elif c: p12_ok=False; p12_msg += "; p12 key MISMATCH"
 results["P12 Keystore"] = (p12_ok, p12_msg)
