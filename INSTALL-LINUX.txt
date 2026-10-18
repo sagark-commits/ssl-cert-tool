@@ -48,4 +48,4 @@ You cannot create a Mac ZIP on Windows.
 JAVA NOTE
 ---------
 P12/PEM/CRT/Asterisk: no Java needed
-JKS (.jks): needs keytool (Java) on PATH
+JKS (.jks): uses Java's keytool if it is on PATH; otherwise the built-in JKS writer is used (no Java needed)

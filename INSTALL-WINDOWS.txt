@@ -19,11 +19,11 @@ NO PYTHON INSTALL NEEDED.
 4. Edit configs in the configs\ folder next to the .exe
    Output files appear in output\
 
-Optional: Java keytool
-----------------------
+Java (optional)
+---------------
 - P12 / PEM / CRT generation works without Java
-- .jks creation needs Java JDK/JRE with keytool on PATH
-  (same as before for Tomcat JKS)
+- .jks creation uses Java's keytool if it is on PATH; otherwise the built-in JKS writer is used (no Java needed)
+  Java is only needed if you specifically want Java's own keytool to build the .jks.
 
 Firewall / antivirus
 --------------------
