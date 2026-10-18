@@ -1,4 +1,4 @@
-﻿# SSL Deployment Configuration Template
+# SSL Deployment Configuration Template
 # =====================================
 # Copy this file and customize for your environment:
 #   cp configs/template.yaml configs/mycompany.yaml
@@ -11,7 +11,8 @@ domain: ""  # e.g., example.com, *.example.com, mail.example.com
 
 # Keystore settings (for JKS/P12 generation)
 keystore:
-  password: "changeit"  # IMPORTANT: Change this for production!
+  password: "changeit"  # IMPORTANT: change this for production, and prefer not to store it in
+                        # this file: use  password: ${env:KEYSTORE_PASSWORD}  (read at run time)
   alias: "server-cert"  # Key alias in the keystore
 
 # SSH defaults (can be overridden per server)
@@ -19,7 +20,26 @@ ssh:
   user: "root"           # Default SSH user
   port: 22               # Default SSH port
   key: "~/.ssh/id_rsa"   # Default SSH key path (~ expands on all platforms)
-  # password: ""         # Or use SSH_PASSWORD environment variable
+  # password: ${env:SSH_PASSWORD}   # never write a literal password here
+  #
+  # Reaching a server through a bastion: on a server entry set either
+  #   ssh_alias: my-alias          # take HostName/Port/User/ProxyJump from ~/.ssh/config
+  #   proxy_jump: bastion          # another server in this file, an ssh-config alias, or user@host:port
+  #   proxy_jump: [jump1, jump2]   # several hops, in connect order
+  # (config_file: below points at a different OpenSSH config than ~/.ssh/config)
+  # config_file: ~/.ssh/config
+  #
+  # Host-key checking. "strict" (default) refuses servers whose key is not already in
+  # ~/.ssh/known_hosts or ~/.ssl-auto/known_hosts and prints the fingerprint to verify.
+  # "accept-new" trusts and remembers a server on first contact (same as the
+  # --accept-new-hostkeys flag). A CHANGED key is always refused. To pin a server instead,
+  # set  host_key_sha256: "SHA256:..."  on that server (or here, as a default).
+  host_key_policy: strict
+
+# Where each deploy snapshots the files it overwrites (used by `rollback`).
+# Must be an absolute path; it is created 0700 and must be owned by the SSH user.
+# The default (/tmp/ssl-deploy-backups) is cleared on reboot - use a durable path for production.
+# backup_dir: /var/backups/ssl-auto
 
 # =============================================================================
 # SERVER DEFINITIONS
@@ -33,6 +53,9 @@ ssh:
 #   - port: (optional) SSH port, defaults to 22
 #   - key_file: (optional) SSH key path, defaults to ssh.key above
 #   - services: list of service names to deploy to this server
+#   - host_key_sha256: (optional) pin the server's SSH host key, e.g. "SHA256:3qB..."
+#   - ssh_alias / proxy_jump: (optional) reach it via ~/.ssh/config or jump hosts (see ssh: above);
+#     in that case `host` may be omitted when ssh_alias provides it
 
 servers:
   # Example: Application server with Tomcat
@@ -126,9 +149,51 @@ services:
   #   file_mappings:
   #     certificate: /app/certs/server.crt
   #     private_key: /app/certs/server.key
-  #     chain: /app/certs/ca-bundle.crt
-  #     jks: /app/certs/keystore.jks
+  #     chain: /app/certs/ca-bundle.crt   # a value can also be a list of paths,
+  #     jks: /app/certs/keystore.jks      # to write one source under 2+ names
   #   restart: "systemctl restart myapp"
+
+  # ---------------------------------------------------------------------------
+  # Optional fields on ANY service: hooks + priority
+  # ---------------------------------------------------------------------------
+  # hooks: shell commands to run on the host after all of that host's file
+  #   uploads succeed, but before restarts. Useful for verification or for
+  #   importing a cert into another store (e.g. the JVM truststore).
+  #   If two services on the SAME server define the exact same hook string,
+  #   it still only runs once for that host.
+  #
+  # verify_tls: after the restart, handshake with the service and confirm it now serves the
+  #   certificate that was just deployed (retries while the service comes up). Needs the
+  #   TLS port to be reachable from this machine. `host` defaults to the server's host.
+  #     verify_tls: {port: 8443}
+  #     verify_tls: [{port: 8443}, {port: 9443, servername: app.example.com, attempts: 10, delay: 3}]
+  #
+  # Safety behaviour (no configuration needed): all destination paths must be absolute; a
+  # failing hook stops the restarts and restores the files; a JKS service must open on the
+  # server with the configured password/alias before anything is restarted.
+  #
+  # priority: controls restart ORDER when a server has multiple services
+  #   (ascending, default 50) - e.g. restart an app server before a
+  #   dependent report server. Two services with the identical restart
+  #   command on the same server only trigger it once.
+  #
+  # appserver:
+  #   type: jks
+  #   remote_path: /app/ssl/server.jks
+  #   restart: "ameyoctl service appserver faststop && sleep 5 && ameyoctl service appserver start"
+  #   priority: 10
+  #   hooks:
+  #     - |
+  #       keytool -delete -alias server-cert -keystore /path/to/cacerts -storepass changeit || true
+  #       keytool -importkeystore -srckeystore /app/ssl/server.jks -destkeystore /path/to/cacerts \
+  #         -srcstoretype JKS -deststoretype JKS -srcstorepass changeit -deststorepass changeit -noprompt
+  #
+  # # A second service reading the SAME keystore path: uploaded/backed up once,
+  # # its hooks are deduped against appserver's, and it restarts after it.
+  # tomcat_si:
+  #   type: jks
+  #   remote_path: /app/ssl/server.jks
+  #   priority: 20
 
 # =============================================================================
 # CERTIFICATE MAPPINGS (optional, advanced)

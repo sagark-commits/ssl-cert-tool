@@ -38,7 +38,7 @@ TOOLTIPS = {
     "store_pass": "Password for JKS and P12 keystore files (Java keytool requires at least 6 characters for JKS)",
     "alias": "Alias name for the key entry in the keystore",
     "output_dir": "Directory where output files will be created",
-    "keytool": "Path to Java keytool.exe. Required for JKS creation",
+    "keytool": "Path to Java keytool.exe. Optional: if it is not found, the built-in JKS writer is used",
     "p12_password": "Password for PKCS12 (.p12/.pfx) input files if encrypted",
     "paste_cert": "Paste PEM certificate text directly from clipboard",
     "paste_text": "Manually enter or paste PEM certificate text",

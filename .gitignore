@@ -23,3 +23,16 @@ Thumbs.db
 .idea/
 .vscode/
 offline/wheels/
+
+.pytest_cache/
+
+# Customer material, private keys and archives must never be committed
+*.pem
+!ssl_cert_tool/bundled_roots/*.pem
+*.rar
+*.zip
+test-*/
+test_output/
+test_pipeline_out/
+configs/nayifat-ameyo.yaml
+legacy/**/nayifat*

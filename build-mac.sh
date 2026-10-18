@@ -24,6 +24,14 @@ OUT="dist/SSLCertTool-Mac"
 rm -rf "$OUT"
 mkdir -p "$OUT/configs" "$OUT/output"
 
+# Only the template and examples are shipped: customer configs (hostnames,
+# passwords) must never be bundled into the binary or the package.
+STAGE="build/package-configs"
+rm -rf "$STAGE"; mkdir -p "$STAGE"
+cp configs/template.yaml "$STAGE/"
+cp configs/example-*.yaml "$STAGE/" 2>/dev/null || true
+cp configs/*.example.yaml "$STAGE/" 2>/dev/null || true
+
 echo
 echo "[1/2] Building GUI app: SSLCertTool ..."
 python3 -m PyInstaller --noconfirm --clean --windowed --onefile \
@@ -34,7 +42,8 @@ python3 -m PyInstaller --noconfirm --clean --windowed --onefile \
     --paths . \
     --add-data "ssl_cert_tool:ssl_cert_tool" \
     --add-data "ssl_deploy:ssl_deploy" \
-    --add-data "configs:configs" \
+    --add-data "$STAGE:configs" \
+    --add-data "catalogues:catalogues" \
     --hidden-import=paramiko \
     --hidden-import=cryptography \
     --hidden-import=yaml \
@@ -58,7 +67,8 @@ python3 -m PyInstaller --noconfirm --clean --console --onefile \
     --paths . \
     --add-data "ssl_cert_tool:ssl_cert_tool" \
     --add-data "ssl_deploy:ssl_deploy" \
-    --add-data "configs:configs" \
+    --add-data "$STAGE:configs" \
+    --add-data "catalogues:catalogues" \
     --hidden-import=paramiko \
     --hidden-import=cryptography \
     --hidden-import=yaml \
@@ -80,7 +90,7 @@ fi
 
 echo
 echo "Copying configs and docs..."
-cp -R configs/* "$OUT/configs/"
+cp -R "$STAGE"/* "$OUT/configs/"
 cp README-PORTABLE.txt "$OUT/README.txt"
 [ -f INSTALL-MAC.txt ] && cp INSTALL-MAC.txt "$OUT/INSTALL.txt"
 
