@@ -40,7 +40,7 @@ Example layout:
     domain.key                   # private key (REQUIRED)
 
 Also know your Tomcat values:
-  keystorePass  (example: oxQt1HSR3ohh7iF3.lpd)
+  keystorePass  (example: YOUR_KEYSTORE_PASSWORD)
   keyAlias      (usually: ameyo-server)
 
 
