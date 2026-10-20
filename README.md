@@ -309,13 +309,23 @@ Run `python setup.py` to install Python dependencies and verify tools.
 
 ## SSL Certificate Studio (new GUI, preview)
 
-A redesigned desktop app for the same jobs as the CLI, in a dark theme with step-by-step pages:
+A redesigned desktop app for the same jobs as the CLI, in a dark theme with step-by-step pages.
+
+![SSL Certificate Studio: the Certificates page](docs/screenshots/studio/02-certificates-inspect.png)
+
+*Demo data, taken on Windows 11. More screenshots and a page-by-page tour are in [docs/STUDIO.md](docs/STUDIO.md).*
 
 ```bash
-python ssl-gui2.py                  # opens on Home
+python ssl-gui2.py                  # opens on Home (use `py` on Windows, `python3` on macOS/Linux)
 python ssl-gui2.py --page deploy    # or: home, certs, deploy, copy, rollback, keystore
 python ssl-gui2.py --no-state       # do not read or remember anything (folders, last config)
 ```
+
+It needs Python 3.9+ **with Tkinter** and `pip install -r requirements.txt`. Tkinter is bundled with the Windows and
+python.org macOS installers; on Linux install it first (`sudo apt install python3-tk` on Debian/Ubuntu,
+`sudo dnf install python3-tkinter` on Fedora/RHEL/Rocky, `sudo pacman -S tk` on Arch, `sudo zypper install python3-tk`
+on openSUSE) and with Homebrew use `brew install python-tk`. Per-OS steps and troubleshooting are in
+[docs/STUDIO.md](docs/STUDIO.md).
 
 | Page | What it does |
 |---|---|
@@ -325,7 +335,7 @@ python ssl-gui2.py --no-state       # do not read or remember anything (folders,
 | Rollback | Restore the previous files from the last (or a chosen) backup |
 | Keystores | Open a `.jks`/`.p12` and see the alias, domain, issuer, expiry and chain |
 
-It calls the same code as the CLI, needs nothing beyond what `ssl-auto` already needs (Tkinter ships with Python), and
+It calls the same code as the CLI, needs nothing beyond what `ssl-auto` already needs plus Tkinter, and
 keeps the same safety rules: dry run is on by default, live actions ask first, SSH host keys are verified, and passwords
 are typed into a hidden dialog and never stored. The classic `ssl-gui.py` is unchanged and is still what the packaged
 executables launch.
