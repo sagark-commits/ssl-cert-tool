@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Certificates: inspect a bundle, check the key, generate the deployment files."""
 from __future__ import annotations
 

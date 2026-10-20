@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Author: Sagar K | 2026 | MIT licence
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Default deploy config: ../ssl-deploy/config.yaml (auto-discovered by ssl-pipeline.py if --config omitted)

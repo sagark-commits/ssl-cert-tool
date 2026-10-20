@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """The Studio's screens. PAGES maps a navigation key to its Page class."""
 from __future__ import annotations
 

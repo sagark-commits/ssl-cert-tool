@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Copy to server: scp-style push, through jump hosts if needed."""
 from __future__ import annotations
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Author: Sagar K | 2026 | MIT licence
 """Cross-platform setup: install deps and verify Java/keytool/SSH."""
 from __future__ import annotations
 

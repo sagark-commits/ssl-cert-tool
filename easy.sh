@@ -1,4 +1,5 @@
 #!/bin/bash
+# Author: Sagar K | 2026 | MIT licence
 cd "$(dirname "$0")"
 ASNB_CERT="${ASNB_CERT:-/path/to/ASNB CERT}"
 

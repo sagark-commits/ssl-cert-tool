@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Rollback: put the previous files back from the last backup."""
 from __future__ import annotations
 

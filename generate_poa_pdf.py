@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 from datetime import date
 from pathlib import Path
 import yaml

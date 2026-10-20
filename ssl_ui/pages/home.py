@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Home: what you can do, and what this machine is set up for."""
 from __future__ import annotations
 

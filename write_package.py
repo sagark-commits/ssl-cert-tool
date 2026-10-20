@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Bootstrap script to write ssl_cert_tool package with correct UTF-8 encoding."""
 from pathlib import Path
 

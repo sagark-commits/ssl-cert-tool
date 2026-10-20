@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Reusable Ameyo/CRM service catalogue for YAML deploy configs.
 
 A customer config sets `ameyo_profile:` (SSL dir, JKS name, etc.) and then

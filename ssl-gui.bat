@@ -1,3 +1,4 @@
+@REM Author: Sagar K | 2026 | MIT licence
 @echo off
 REM SSL Certificate Tool - GUI Launcher
 REM Double-click this file to launch the GUI

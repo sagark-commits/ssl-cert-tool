@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """In-process SSH servers for tests: password auth, exec handlers, and direct-tcpip forwarding
 (so one server can act as a jump host for another)."""
 from __future__ import annotations

@@ -5,6 +5,7 @@ description = "Parse customer certificate bundles, build deployment artifacts, a
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
+authors = [{ name = "Sagar K" }]
 dependencies = [
     "cryptography>=44.0.1",
     "paramiko>=3.4.0",

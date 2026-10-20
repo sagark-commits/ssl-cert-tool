@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Developer helpers: capture a Tk window to a PNG (Windows only, no Pillow)."""
 from __future__ import annotations
 

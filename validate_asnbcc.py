@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 import hashlib, glob, os, shutil, subprocess, sys
 from pathlib import Path
 from cryptography import x509

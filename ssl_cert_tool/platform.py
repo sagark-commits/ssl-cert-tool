@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Cross-platform utilities: paths, keytool discovery, terminal colors, OS detection."""
 from __future__ import annotations
 

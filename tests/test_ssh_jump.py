@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Jump hosts: real tunnelling through in-process SSH servers, and ssh-config resolution."""
 from __future__ import annotations
 

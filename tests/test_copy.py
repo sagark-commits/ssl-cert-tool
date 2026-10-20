@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """`copy`: scp-style push with verification, backup, atomic write and revert."""
 from __future__ import annotations
 

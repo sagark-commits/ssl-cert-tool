@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """SSL certificate deployment to remote servers via SSH."""
 from __future__ import annotations
 

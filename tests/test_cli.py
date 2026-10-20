@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """End-to-end CLI behaviour: secrets handling, exit codes, archive input."""
 from __future__ import annotations
 

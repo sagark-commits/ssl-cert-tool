@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """An in-memory-ish stand-in for ssl_deploy.ssh.RemoteHost.
 
 Remote absolute paths are mapped into a sandbox directory, and the handful of

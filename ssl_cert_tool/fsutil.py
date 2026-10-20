@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Filesystem helpers: private-file writes, atomic replace, safe archive limits."""
 from __future__ import annotations
 

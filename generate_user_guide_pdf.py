@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Generate SSL Certificate Tool User Guide PDF (Windows/Mac all-in-one)."""
 from datetime import date
 from pathlib import Path

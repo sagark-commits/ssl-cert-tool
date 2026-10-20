@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """The Studio window, driven for real: widgets, dialogs, pages, and full flows.
 
 These use a real Tk root. Without a display (e.g. headless Linux CI) they are skipped;
@@ -538,3 +539,22 @@ def test_no_password_is_ever_written_to_the_saved_state(app, cert_dir, tmp_path,
     saved = (tmp_path / "state.json").read_text(encoding="utf-8")
     assert "S3cretKeystorePw" not in saved and "KeyPassphrase1" not in saved
     assert "S3cretKeystorePw" not in app.logview.contents()
+
+
+def test_sidebar_credit_opens_the_about_box_with_the_author_and_licence(app, monkeypatch):
+    from ssl_ui.widgets import AboutDialog
+
+    assert "Sagar K" in app.credit_label.cget("text")
+    opened = []
+    monkeypatch.setattr(app, "_about", lambda: opened.append("about"))
+    app.credit_label.event_generate("<Button-1>")
+    assert opened == ["about"]
+
+    dialog = AboutDialog(app.root, app.theme, version="9.9", tool_version="8.8", author="Sagar K", licence="MIT",
+                         url="https://example.com/source")
+    shown = " ".join(texts(dialog))
+    assert "Created by Sagar K" in shown and "MIT licence" in shown and "Studio 9.9" in shown and "https://example.com/source" in shown
+    monkeypatch.setattr("ssl_ui.widgets.webbrowser.open", lambda url: opened.append(url))
+    dialog.open_source()
+    assert opened[-1] == "https://example.com/source"
+    dialog.destroy()

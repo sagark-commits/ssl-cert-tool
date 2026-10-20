@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Keystores: open a .jks or .p12 and see what's inside (no Java needed)."""
 from __future__ import annotations
 

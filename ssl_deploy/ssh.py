@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """SSH helpers: strict host-key verification, safe quoting, robust command runner.
 
 The deployer talks to servers through `RemoteHost`, a thin wrapper over a

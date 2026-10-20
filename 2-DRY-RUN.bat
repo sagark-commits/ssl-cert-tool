@@ -1,3 +1,4 @@
+@REM Author: Sagar K | 2026 | MIT licence
 @echo off
 cd /d "%~dp0"
 echo DRY RUN - Shows what would happen. Servers NOT changed.

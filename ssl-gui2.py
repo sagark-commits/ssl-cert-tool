@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Author: Sagar K | 2026 | MIT licence
 """SSL Certificate Studio - the next-generation GUI (the classic ssl-gui.py is unchanged).
 
     python ssl-gui2.py

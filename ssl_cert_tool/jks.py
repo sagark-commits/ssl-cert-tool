@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Pure-Python reader/writer for Java KeyStore (JKS) files - no JDK required.
 
 Used when `keytool` is not installed (and for reading old keystores). Java's own
