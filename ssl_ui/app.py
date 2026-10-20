@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """The Studio window: sidebar, header, pages, and the activity log dock."""
 from __future__ import annotations
 
@@ -5,13 +6,14 @@ import tkinter as tk
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from ssl_ui import __version__ as UI_VERSION
+from ssl_cert_tool import __version__ as TOOL_VERSION
+from ssl_ui import REPO_URL, __author__ as AUTHOR, __license__ as LICENCE, __version__ as UI_VERSION
 from ssl_ui.render import mix, render_gradient_bar, render_round
 from ssl_ui.runner import TaskRunner
 from ssl_ui.services import UiError
 from ssl_ui.state import UiState
 from ssl_ui.theme import Theme, enable_dpi_awareness
-from ssl_ui.widgets import Button, LogView, PasswordDialog, Pill, Shimmer, apply_dark_titlebar
+from ssl_ui.widgets import AboutDialog, Button, LogView, PasswordDialog, Pill, Shimmer, apply_dark_titlebar
 
 NAV: List[Tuple[str, str, str]] = [
     ("home", "⌂", "Home"),
@@ -122,6 +124,12 @@ class StudioApp:
         footer.pack(side="bottom", fill="x", padx=18, pady=16)
         Pill(footer, theme, "host keys: strict", "success", dot=True, bg=p.sidebar, font=theme.f_tiny, pady=1).pack(anchor="w")
         tk.Label(footer, text=f"studio {UI_VERSION}", bg=p.sidebar, fg=p.faint, font=theme.f_tiny).pack(anchor="w", pady=(8, 0))
+        self.credit_label = tk.Label(footer, text=f"by {AUTHOR}  ·  About", bg=p.sidebar, fg=p.faint, font=theme.f_tiny, cursor="hand2")
+        self.credit_label.pack(anchor="w", pady=(2, 0))
+        self.credit_label.bind("<Button-1>", lambda _e: self._about())
+        self.credit_label.bind("<Enter>", lambda _e: self.credit_label.configure(fg=p.accent2))
+        self.credit_label.bind("<Leave>", lambda _e: self.credit_label.configure(fg=p.faint))
+        root.bind("<F1>", lambda _e: self._about())
 
         main = tk.Frame(root, bg=p.bg)
         main.pack(side="left", fill="both", expand=True)
@@ -241,6 +249,10 @@ class StudioApp:
         return self.runner.run(label, func, finished)
 
     # -- dialogs ----------------------------------------------------------------------
+    def _about(self) -> None:
+        AboutDialog(self.root, self.theme, version=UI_VERSION, tool_version=TOOL_VERSION, author=AUTHOR, licence=LICENCE,
+                    url=REPO_URL).show()
+
     def _ask_password(self, hop: Dict[str, Any]) -> Optional[str]:
         who = f"{hop.get('user', 'root')}@{hop.get('host')}:{hop.get('port', 22)}"
         return PasswordDialog(self.root, self.theme, who, "It will be used for this connection only.").show()

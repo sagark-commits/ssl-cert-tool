@@ -101,6 +101,10 @@ trusted before the tool will deploy to them (see "Host keys" in the README).
   `docs/screenshots/studio/`.
 - Display fixes found while taking the screenshots: the Home "Your setup" card no longer clips its values, and long file
   names in the Certificates "Generated files" list can no longer squeeze out their description.
+- Author credit: every source file (Python, shell, batch, PowerShell) now starts with `Author: Sagar K | 2026 | MIT licence`
+  (after any `#!` line), keeping each file's encoding and line endings. Added the missing `LICENSE` (MIT),
+  `authors` in `pyproject.toml` and `__author__` / `__license__` in the packages. The Studio shows `by Sagar K · About`
+  at the bottom of the sidebar and an About box (also F1). `tests/test_author_header.py` keeps new Python files signed.
 - `tests/test_ui_widgets.py` drives the real window (every page, full inspect/generate/deploy/copy/rollback/keystore flows,
   dialogs, widgets). The tests are skipped when there is no display (use `xvfb-run` on a headless Linux box), never show a
   window or take keyboard focus, and fail instead of hanging if a dialog waits for input.

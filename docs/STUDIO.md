@@ -92,6 +92,11 @@ needed), how many SSH aliases it found, and how many host keys are trusted.
 
 ![Home](screenshots/studio/01-home.png)
 
+The bottom of the sidebar shows the version and who made it. Click **About** (or press F1) for the licence and a link to
+the source.
+
+![About box](screenshots/studio/09-about.png)
+
 **Certificates.** Add whatever the CA sent (certificates, a zip, an email, a `.p7b`). The right side shows the chain, who
 issued each certificate, how many days are left, and whether the private key matches. Nothing is written until you press
 *Generate files*.

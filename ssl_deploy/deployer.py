@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Cross-platform SSL deployment orchestrator (paramiko-based).
 
 Safety properties (see tests/):

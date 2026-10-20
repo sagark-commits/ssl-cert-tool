@@ -1,9 +1,11 @@
+# Author: Sagar K | 2026 | MIT licence
 """Widget kit for SSL Certificate Studio: buttons, cards, pills, toggles, fields, log, dialogs."""
 from __future__ import annotations
 
 import sys
 import time
 import tkinter as tk
+import webbrowser
 from tkinter import filedialog, ttk
 from typing import Callable, List, Optional, Sequence, Tuple
 
@@ -569,3 +571,29 @@ class ConfirmDialog(Dialog):
         row.pack(fill="x")
         Button(row, theme, confirm, lambda: self.finish(True), kind=kind, padx=22).pack(side="right")
         Button(row, theme, "Cancel", lambda: self.finish(False), kind="ghost", padx=18).pack(side="right", padx=(0, 10))
+
+
+class AboutDialog(Dialog):
+    """Who made the Studio, which version this is, and where the source lives."""
+
+    def __init__(self, parent: tk.Misc, theme: Theme, *, version: str, tool_version: str, author: str, licence: str, url: str) -> None:
+        super().__init__(parent, theme, "About SSL Certificate Studio")
+        p = theme.p
+        self.url = url
+        tk.Label(self.body, text="⚿  SSL Certificate Studio", bg=p.surface, fg=p.text, font=theme.f_h2, anchor="w").pack(fill="x")
+        tk.Label(self.body, text=f"Studio {version}  ·  tool {tool_version}", bg=p.surface, fg=p.muted, font=theme.f_small,
+                 anchor="w").pack(fill="x", pady=(4, 14))
+        tk.Label(self.body, text=f"Created by {author}", bg=p.surface, fg=p.text, font=theme.f_bold, anchor="w").pack(fill="x")
+        tk.Label(self.body, text=f"{licence} licence  ·  see the LICENSE file", bg=p.surface, fg=p.muted, font=theme.f_small,
+                 anchor="w").pack(fill="x", pady=(2, 0))
+        tk.Label(self.body, text=url, bg=p.surface, fg=p.accent2, font=theme.f_mono_small, anchor="w").pack(fill="x", pady=(12, 16))
+        row = tk.Frame(self.body, bg=p.surface)
+        row.pack(fill="x")
+        Button(row, theme, "Close", lambda: self.finish(None), padx=22).pack(side="right")
+        Button(row, theme, "Open on GitHub", self.open_source, kind="ghost", padx=18).pack(side="right", padx=(0, 10))
+
+    def open_source(self) -> None:
+        try:
+            webbrowser.open(self.url)
+        except Exception:  # no browser available: the address is shown in the dialog anyway
+            pass

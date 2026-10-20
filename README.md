@@ -403,4 +403,4 @@ ssl-cert-tool/
 
 ## License
 
-MIT
+MIT, see [LICENSE](LICENSE). Created by Sagar K.

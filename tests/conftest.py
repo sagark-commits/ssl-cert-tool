@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Shared fixtures: a tiny PKI and helpers to lay out certificate directories."""
 from __future__ import annotations
 

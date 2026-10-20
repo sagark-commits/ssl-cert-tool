@@ -1,3 +1,4 @@
+@REM Author: Sagar K | 2026 | MIT licence
 @echo off
 REM =============================================================================
 REM SSL Certificate Tool - Offline Installer for Windows

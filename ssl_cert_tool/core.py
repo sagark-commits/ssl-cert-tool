@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Core SSL cert processing."""
 from __future__ import annotations
 

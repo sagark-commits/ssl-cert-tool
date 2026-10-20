@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """SSL Certificate Studio - the next-generation GUI (Tkinter, no extra dependencies).
 
 Layers, bottom to top:
@@ -11,3 +12,6 @@ Layers, bottom to top:
 """
 
 __version__ = "0.1.0"
+__author__ = "Sagar K"
+__license__ = "MIT"
+REPO_URL = "https://github.com/sagark-commits/ssl-cert-tool"

@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Desktop GUI for SSL certificate deployment automation."""
 from __future__ import annotations
 

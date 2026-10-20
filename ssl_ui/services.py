@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """The Studio's service layer: plain functions over the real core/deployer, returning plain data.
 
 Nothing here touches Tk, so it is unit-tested directly. The UI calls these on a worker thread.

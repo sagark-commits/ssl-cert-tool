@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """SSL Certificate Tool - Tkinter GUI"""
 from __future__ import annotations
 

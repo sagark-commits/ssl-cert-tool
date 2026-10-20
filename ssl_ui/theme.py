@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Palette, fonts and ttk styling for SSL Certificate Studio."""
 from __future__ import annotations
 

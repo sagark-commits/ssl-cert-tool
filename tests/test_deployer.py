@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Deployer behaviour against a fake remote host (atomic, verified, reversible)."""
 from __future__ import annotations
 

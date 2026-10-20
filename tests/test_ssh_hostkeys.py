@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Host-key verification and the command runner, against a real in-process SSH server."""
 from __future__ import annotations
 

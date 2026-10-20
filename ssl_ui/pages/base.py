@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Base class shared by every screen."""
 from __future__ import annotations
 

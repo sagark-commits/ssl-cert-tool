@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Author: Sagar K | 2026 | MIT licence
 """Unified SSL pipeline CLI: inspect, generate, and deploy."""
 from __future__ import annotations
 

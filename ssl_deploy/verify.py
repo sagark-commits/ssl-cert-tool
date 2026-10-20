@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Pre-deploy sanity checks (local files) and post-deploy TLS verification (live)."""
 from __future__ import annotations
 

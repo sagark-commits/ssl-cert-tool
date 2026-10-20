@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Composite widgets shared by the pages."""
 from __future__ import annotations
 

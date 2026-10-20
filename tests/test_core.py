@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Certificate/key parsing, key matching, archive safety, keytool handling."""
 from __future__ import annotations
 

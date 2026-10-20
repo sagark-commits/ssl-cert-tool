@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Studio service layer and task runner: tested without any window."""
 from __future__ import annotations
 

@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Resolve app / resource paths for source runs and frozen (PyInstaller) builds."""
 from __future__ import annotations
 

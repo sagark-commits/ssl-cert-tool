@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Remembers non-secret choices (paths, hosts, switches) between sessions. Never stores passwords."""
 from __future__ import annotations
 

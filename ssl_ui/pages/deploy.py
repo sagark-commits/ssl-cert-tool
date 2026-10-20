@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Deploy: roll a certificate folder out to the servers in a config, preview first."""
 from __future__ import annotations
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Author: Sagar K | 2026 | MIT licence
 """
 Download Python dependencies for offline installation.
 

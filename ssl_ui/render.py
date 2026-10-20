@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """Procedural anti-aliased shapes as Tk PhotoImages (no Pillow needed).
 
 Tk draws crisp rectangles but has no rounded corners or gradients. These helpers compute the

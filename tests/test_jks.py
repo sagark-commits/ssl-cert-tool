@@ -1,3 +1,4 @@
+# Author: Sagar K | 2026 | MIT licence
 """The built-in JKS reader/writer: round-trips, hostile input, and an independent oracle."""
 from __future__ import annotations
 
