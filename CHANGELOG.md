@@ -96,6 +96,11 @@ trusted before the tool will deploy to them (see "Host keys" in the README).
   server" carry freshly generated files straight into the next step.
 - The classic `ssl-gui.py` is **unchanged**, and the Windows/macOS/Linux builds still ship the classic GUI until the Studio
   is promoted.
+- New guide `docs/STUDIO.md`: how to run the Studio on Windows, macOS and Linux (Debian/Ubuntu, Fedora, RHEL/Rocky, Arch,
+  openSUSE, Alpine), a screenshot tour of every page (demo data, Windows 11) and troubleshooting. Screenshots live in
+  `docs/screenshots/studio/`.
+- Display fixes found while taking the screenshots: the Home "Your setup" card no longer clips its values, and long file
+  names in the Certificates "Generated files" list can no longer squeeze out their description.
 - `tests/test_ui_widgets.py` drives the real window (every page, full inspect/generate/deploy/copy/rollback/keystore flows,
   dialogs, widgets). The tests are skipped when there is no display (use `xvfb-run` on a headless Linux box), never show a
   window or take keyboard focus, and fail instead of hanging if a dialog waits for input.

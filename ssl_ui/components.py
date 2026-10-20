@@ -191,7 +191,12 @@ class KeyValue(tk.Frame):
         p = theme.p
         bg = parent.cget("bg")
         super().__init__(parent, bg=bg)
-        tk.Label(self, text=label, bg=bg, fg=p.muted, font=theme.f_small, anchor="w", width=16).pack(side="left")
+        # label and status on the first line, the value wraps underneath: nothing is ever clipped, however narrow the card
+        head = tk.Frame(self, bg=bg)
+        head.pack(fill="x")
+        tk.Label(head, text=label, bg=bg, fg=p.muted, font=theme.f_small, anchor="w").pack(side="left")
         if pill:
-            Pill(self, theme, pill, kind, bg=bg, dot=True, font=theme.f_tiny, pady=1).pack(side="left", padx=(0, 8))
-        tk.Label(self, text=value, bg=bg, fg=p.text, font=theme.f_small, anchor="w", justify="left", wraplength=360).pack(side="left", fill="x")
+            Pill(head, theme, pill, kind, bg=bg, dot=True, font=theme.f_tiny, pady=1).pack(side="left", padx=(8, 0))
+        text = tk.Label(self, text=value, bg=bg, fg=p.text, font=theme.f_small, anchor="w", justify="left", wraplength=240)
+        text.pack(fill="x")
+        autowrap(text, self)

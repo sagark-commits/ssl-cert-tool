@@ -16,12 +16,12 @@ from ssl_ui.widgets import Button, Card, Disclosure, Field, PathField, Pill, aut
 
 # (suffix test, what the file is for) - first match wins
 PURPOSE = [
-    (lambda n: n.endswith(".jks"), "Java keystore (Tomcat, Spring, Ameyo)"),
+    (lambda n: n.endswith(".jks"), "Java keystore (Tomcat, Ameyo)"),
     (lambda n: n.endswith((".p12", ".pfx")), "PKCS#12 keystore"),
     (lambda n: n.endswith(".key"), "Private key — keep it secret"),
     (lambda n: n.startswith("main_") and n.endswith(".crt"), "Server certificate"),
     (lambda n: n.startswith("asterisk") and n.endswith(".pem"), "Asterisk: key + chain"),
-    (lambda n: n.startswith("asterisk") and n.endswith(".crt"), "Asterisk: certificate chain"),
+    (lambda n: n.startswith("asterisk") and n.endswith(".crt"), "Asterisk chain"),
     (lambda n: n in ("chain.crt", "crm-ca.crt") or n.endswith(".ca-bundle"), "CA chain (Apache, Nginx)"),
     (lambda n: n.startswith(("intermediate_", "root_")), "CA certificate"),
     (lambda n: n.endswith(".pem"), "Full chain PEM"),
@@ -281,11 +281,12 @@ class CertsPage(Page):
         for name, size in view.files:
             line = tk.Frame(self.gen_body, bg=p.surface)
             line.pack(fill="x", pady=1)
-            tk.Label(line, text=name, bg=p.surface, fg=p.text, font=theme.f_mono_small, anchor="w").pack(side="left")
+            # size and purpose are packed first so a long file name can never squeeze them out
             tk.Label(line, text=human_size(size), bg=p.surface, fg=p.faint, font=theme.f_tiny).pack(side="right")
             purpose = describe_file(name)
             if purpose:
                 tk.Label(line, text=purpose, bg=p.surface, fg=p.muted, font=theme.f_tiny).pack(side="right", padx=12)
+            tk.Label(line, text=name, bg=p.surface, fg=p.text, font=theme.f_mono_small, anchor="w").pack(side="left")
         for warning in view.warnings:
             caution = tk.Label(self.gen_body, text="\u26a0  " + warning, bg=p.surface, fg=p.warn, font=theme.f_small, anchor="w", justify="left", wraplength=320)
             caution.pack(fill="x", pady=(8, 0))
